@@ -7,8 +7,8 @@ export type ConnectedDevice = {
 };
 
 export enum ConnectionStatus {
-  DISCONNECTED = "Disconnected",  // Not connected to a Usb2Snes Server
-  CONNECTING = "Connecting",  // Connecting to a Usb2Snes Server
+  INACTIVE = "Inactive",  // Not connected to a Usb2Snes Server
+  INITIALIZING = "Initializing",  // Connecting to a Usb2Snes Server
   IDLE = "Idle",  // Connected to a Usb2Snes Server, ready to connect to a device
   CONNECTED = "Connected"  // Connected to a Device
 }

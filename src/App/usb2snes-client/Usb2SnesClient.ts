@@ -24,7 +24,7 @@ interface Usb2SnesClientConstructorParams {
 
 export class Usb2SnesClient {
   protected socketConnection: WebSocket;
-  protected connectionStatus: ConnectionStatus = ConnectionStatus.DISCONNECTED;
+  protected connectionStatus: ConnectionStatus = ConnectionStatus.INACTIVE;
   private serverURI: string;
   private commandHistory: Array<Command>;
   private updateDeviceList: Function;
@@ -43,7 +43,7 @@ export class Usb2SnesClient {
 
   // TODO (BACKLOG): add `connectionStatus` to store and send to ConnectivityPage
   connect(deviceName: string): void {
-    this.connectionStatus = ConnectionStatus.CONNECTING;
+    this.connectionStatus = ConnectionStatus.INITIALIZING;
     this.sendMessage({
       Opcode: "Attach",
       Space: "SNES",
@@ -117,11 +117,11 @@ export class Usb2SnesClient {
 
   protected onConnectionClose(event: CloseEvent): void {
     console.log("Close:", event);
-    if (this.connectionStatus === ConnectionStatus.DISCONNECTED) {
+    if (this.connectionStatus === ConnectionStatus.INACTIVE) {
       console.error(`Failed to connect to the server`);
     }
 
-    this.connectionStatus = ConnectionStatus.DISCONNECTED;
+    this.connectionStatus = ConnectionStatus.INACTIVE;
     this.dispatchUpdateEvent();
   }
 
