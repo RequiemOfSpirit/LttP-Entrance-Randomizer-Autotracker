@@ -6,12 +6,13 @@ import { InventoryState, BASE_INVENTORY, RawInventoryState } from "../../common/
 // Merge in methods of the Blob object type not present in the typescript Blob interface
 declare global {
   interface Blob {
-    arrayBuffer: () => Promise<ArrayBuffer>; 
+    arrayBuffer: () => Promise<ArrayBuffer>;
   }
 }
 
 interface LttpClientConstructorParams {
-  updateStoreDevices: Function;
+  updateDeviceList: Function;
+  updateConnectedDevice: Function;
   config: LttpClientConfig;
 }
 
@@ -21,7 +22,10 @@ export class LttPClient extends Usb2SnesClient {
   config: LttpClientConfig;
 
   constructor(params: LttpClientConstructorParams) {
-    super({ updateStoreDevices: params.updateStoreDevices });
+    super({
+      updateDeviceList: params.updateDeviceList,
+      updateConnectedDevice: params.updateConnectedDevice
+    });
     this.config = params.config;
   }
 

@@ -5,7 +5,8 @@ import { NamedLocation, WorldType, EntranceLinks } from "../common/locations";
 /* Simple selectors returning objects */
 export const getNotes = (store: Store) => store.notes;
 export const getInventoryState = (store: Store) => store.inventory;
-export const getDevices = (store: Store) => store.devices;
+export const getDeviceList = (store: Store) => store.deviceList;
+export const getConnectedDevice = (store: Store) => store.connectedDevice;
 // Temporary settings selector. Needs replacement when location/tag based settings are added
 export const getSettings = (store: Store) => store.settings;
 const getEntranceLinks = (store: Store) => store.entranceLinks;

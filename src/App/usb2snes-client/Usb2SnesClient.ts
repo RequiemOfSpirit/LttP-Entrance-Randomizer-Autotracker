@@ -1,8 +1,13 @@
-import { DeviceList, DeviceName, ConnectionStatus } from "../../common/devices";
+import { DeviceName, ConnectionStatus, ConnectedDevice, NULL_DEVICE } from "../../common/devices";
 
-enum Command {
+enum CommandType {
   LIST = "DeviceList",
   INFO = "Info"
+}
+
+interface Command {
+  type: CommandType;
+  params: { [key: string]: string }
 }
 
 interface Usb2SnesMessage {
@@ -13,21 +18,22 @@ interface Usb2SnesMessage {
 }
 
 interface Usb2SnesClientConstructorParams {
-  updateStoreDevices: Function;
+  updateDeviceList: Function;
+  updateConnectedDevice: Function;
 }
 
 export class Usb2SnesClient {
-  protected connectionStatus: ConnectionStatus = ConnectionStatus.DISCONNECTED;
-  protected deviceList: DeviceList = [];
-  protected connectedDeviceName: DeviceName | null = null;
   protected socketConnection: WebSocket;
-  private updateStore: Function;
-  private commandHistory: Array<Command>;
+  protected connectionStatus: ConnectionStatus = ConnectionStatus.DISCONNECTED;
   private serverURI: string;
+  private commandHistory: Array<Command>;
+  private updateDeviceList: Function;
+  private updateConnectedDevice: Function;
 
   constructor(params: Usb2SnesClientConstructorParams) {
     this.serverURI = "ws://127.0.0.1:8080";
-    this.updateStore = params.updateStoreDevices;
+    this.updateDeviceList = params.updateDeviceList;
+    this.updateConnectedDevice = params.updateConnectedDevice;
     this.newConnectionToServer();
   }
 
@@ -35,17 +41,8 @@ export class Usb2SnesClient {
     return this.connectionStatus;
   }
 
-  get availableDevices(): DeviceList {
-    return this.deviceList;
-  }
-
-  get connectedDevice(): DeviceName | null {
-    return this.connectedDeviceName;
-  }
-
   // TODO (BACKLOG): add `connectionStatus` to store and send to ConnectivityPage
   connect(deviceName: string): void {
-    this.connectedDeviceName = deviceName;
     this.connectionStatus = ConnectionStatus.CONNECTING;
     this.sendMessage({
       Opcode: "Attach",
@@ -54,7 +51,7 @@ export class Usb2SnesClient {
     });
 
     this.dispatchUpdateEvent();
-    this.verifyConnection();
+    this.getInfo(deviceName);
   }
 
   reconnectToServer() {
@@ -86,16 +83,28 @@ export class Usb2SnesClient {
   protected onMessage(event: MessageEvent): void {
     console.log("Message:", event);
 
-    let requestType = this.commandHistory.shift();
-    let data = event.data;
-    switch (requestType) {
-      case Command.LIST:
-        this.deviceList = JSON.parse(data).Results;
-        this.updateStore(this.deviceList);
+    const request = this.commandHistory.shift();
+    if (request === undefined) {
+      console.error("No request issued corresponding to received message");
+      return;
+    }
+
+    const data = JSON.parse(event.data);
+
+    switch (request.type) {
+      case CommandType.LIST:
+        this.updateDeviceList(data.Results);
         break;
-      case Command.INFO:
-        this.connectionStatus = ConnectionStatus.CONNECTED;
+      case CommandType.INFO:
+        let connectedDevice: ConnectedDevice = {
+          name: request.params.deviceName,
+          info: data.Results
+        }
+        this.updateConnectedDevice(connectedDevice);
+
+        // TODO (Backlog): Notification here instead
         console.log("Connected");
+        this.connectionStatus = ConnectionStatus.CONNECTED;
         break;
     }
 
@@ -132,8 +141,8 @@ export class Usb2SnesClient {
 
   // Initialize/Reset instance variable values
   protected resetData() {
-    this.deviceList = [];
-    this.connectedDeviceName = null;
+    this.updateDeviceList([]);
+    this.updateConnectedDevice(NULL_DEVICE);
     this.commandHistory = [];
   }
 
@@ -148,15 +157,25 @@ export class Usb2SnesClient {
   }
 
   private listDevices(): void {
-    this.commandHistory.push(Command.LIST);
+    const command: Command = {
+      type: CommandType.LIST,
+      params: {}
+    };
+    this.commandHistory.push(command);
+
     this.sendMessage({
       Opcode: "DeviceList",
       Space: "SNES"
     });
   }
 
-  private verifyConnection(): void {
-    this.commandHistory.push(Command.INFO);
+  private getInfo(deviceName: DeviceName): void {
+    const command: Command = {
+      type: CommandType.INFO,
+      params: { deviceName }
+    };
+    this.commandHistory.push(command);
+
     this.sendMessage({
       Opcode: "Info",
       Space: "SNES"

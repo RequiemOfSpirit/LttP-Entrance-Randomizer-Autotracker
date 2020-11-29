@@ -1,5 +1,5 @@
 import { ActionType } from "./ActionTypes";
-import { DeviceList } from "../common/devices";
+import { ConnectedDevice, DeviceList } from "../common/devices";
 import { InventoryStateUpdate } from "../common/inventory";
 import { EntranceLinks } from "../common/locations";
 import { AppSettings } from "../common/settings";
@@ -25,8 +25,15 @@ export function updateInventory(inventoryStateUpdate: InventoryStateUpdate): Act
 
 export function updateDeviceList(deviceList: DeviceList): Action {
   return {
-    type: ActionType.UPDATE_DEVICES,
+    type: ActionType.UPDATE_DEVICE_LIST,
     payload: deviceList
+  };
+}
+
+export function updateConnectedDevice(connectedDevice: ConnectedDevice): Action {
+  return {
+    type: ActionType.UPDATE_CONNECTED_DEVICE,
+    payload: connectedDevice
   };
 }
 

@@ -1,14 +1,21 @@
 import React, { Component } from 'react';
 import { connect } from "react-redux";
 import { Store } from '../redux/store';
-import { addEntranceLinks, updateInventory, updateDeviceList, updateAppSettings } from "../redux/actions";
+import {
+  addEntranceLinks,
+  updateInventory,
+  updateDeviceList,
+  updateConnectedDevice,
+  updateAppSettings
+} from "../redux/actions";
 import {
   getLocationByIdWrapper,
   getLocationsOnScreenWrapper,
   doesEntranceLinkExistWrapper,
   getNotes,
   getInventoryState,
-  getDevices,
+  getDeviceList,
+  getConnectedDevice,
   getSettings
 } from '../redux/selectors';
 import { Notes } from './Notes';
@@ -19,7 +26,7 @@ import { ItemTracker } from './tracker/ItemTracker';
 import { GlobalConfig, AppConfig } from '../common/config';
 import { Location, EntranceLinks } from '../common/locations';
 import { InventoryState, InventoryStateUpdate } from '../common/inventory';
-import { DeviceList, DeviceName, ConnectionStatus } from '../common/devices';
+import { DeviceList, DeviceName, ConnectionStatus, ConnectedDevice } from '../common/devices';
 import './index.css';
 import { NotesType } from '../common/notes';
 import { Settings } from './Settings';
@@ -29,7 +36,8 @@ interface AppProps {
   globalConfig: GlobalConfig;
   notes: NotesType;
   inventoryState: InventoryState;
-  devices: DeviceList;
+  deviceList: DeviceList;
+  connectedDevice: ConnectedDevice;
   settings: SettingsType;
   getLocationById: Function;
   getLocationsOnScreen: Function;
@@ -37,6 +45,7 @@ interface AppProps {
   addEntranceLinks: Function;
   updateInventory: Function;
   updateDeviceList: Function;
+  updateConnectedDevice: Function;
   updateAppSettings: Function;
 }
 
@@ -55,7 +64,8 @@ class App extends Component<AppProps, AppState> {
   state: AppState = {
     config: this.props.globalConfig.appConfig,
     client: new LttPClient({
-      updateStoreDevices: this.updateDeviceList.bind(this),
+      updateDeviceList: this.updateDeviceList.bind(this),
+      updateConnectedDevice: this.updateConnectedDevice.bind(this),
       config: this.props.globalConfig.lttpClientConfig
     }),
     locationTracker: new LocationTracker({
@@ -105,10 +115,10 @@ class App extends Component<AppProps, AppState> {
     return (
       <div className="App">
         <Connections
-          devices={this.props.devices}
-          refreshDeviceList={() => { this.state.client.refreshDeviceList(); }}
+          devices={this.props.deviceList}
+          refreshDeviceList={this.refreshDeviceList.bind(this)}
           connectToDevice={this.connectToDevice.bind(this)}
-          reconnectToServer={() => { this.state.client.reconnectToServer(); }}
+          reconnectToServer={this.reconnectToServer.bind(this)}
         />
         <Settings
           settings={this.props.settings}
@@ -121,17 +131,35 @@ class App extends Component<AppProps, AppState> {
     );
   }
 
-  // Method passed to connections page to connect to a device
-  private connectToDevice(deviceName: DeviceName) {
-    this.state.client.connect(deviceName);
-  }
-
-  // Method passed down to client to update redux store
+  /**
+   * Methods passed down to usb2snes client to update redux store
+   */
   private updateDeviceList(deviceList: DeviceList): void {
     this.props.updateDeviceList(deviceList);
   }
 
-  // Method to be called when app settings are updated
+  private updateConnectedDevice(connectedDevice: ConnectedDevice): void {
+    this.props.updateConnectedDevice(connectedDevice);
+  }
+
+  /**
+   * Methods passed to connections page
+   */
+  private refreshDeviceList(): void {
+    this.state.client.refreshDeviceList();
+  }
+
+  private connectToDevice(deviceName: DeviceName): void {
+    this.state.client.connect(deviceName);
+  }
+
+  private reconnectToServer(): void {
+    this.state.client.reconnectToServer();
+  }
+
+  /**
+   * Methods passed down to Settings page
+   */
   private updateAppSettings(settings: AppSettings): void {
     this.props.updateAppSettings(settings);
   }
@@ -198,7 +226,8 @@ function mapStoreStateToProps(store: Store) {
   return {
     notes: getNotes(store),
     inventoryState: getInventoryState(store),
-    devices: getDevices(store),
+    deviceList: getDeviceList(store),
+    connectedDevice: getConnectedDevice(store),
     settings: getSettings(store),
     getLocationById: getLocationByIdWrapper(store),
     getLocationsOnScreen: getLocationsOnScreenWrapper(store),
@@ -208,5 +237,5 @@ function mapStoreStateToProps(store: Store) {
 
 export default connect(
   mapStoreStateToProps,
-  { addEntranceLinks, updateInventory, updateDeviceList, updateAppSettings }
+  { addEntranceLinks, updateInventory, updateDeviceList, updateConnectedDevice, updateAppSettings }
 )(App);
