@@ -8,7 +8,7 @@ export default function(state: SettingsType, action: Action): SettingsType {
       return {
         ...state,
         appSettings: (action.payload as AppSettings)
-      }
+      };
     default:
       return state;
   }
