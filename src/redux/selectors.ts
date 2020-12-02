@@ -1,5 +1,4 @@
 import { Store } from "./store";
-import { SCREEN_DATA } from "../common/mapData";
 import { NamedLocation, WorldType, EntranceLinks } from "../common/locations";
 
 /* Simple selectors returning objects */
@@ -11,7 +10,8 @@ export const getServerConnectionStatus = (store: Store) => store.serverConnectio
 // Temporary settings selector. Needs replacement when location/tag based settings are added
 export const getSettings = (store: Store) => store.settings;
 const getEntranceLinks = (store: Store) => store.entranceLinks;
-const getEntranceLocations = (store: Store) => store.entranceLocations;
+const getEntranceLocations = (store: Store) => store.mapData.entranceLocations;
+const getScreenData = (store: Store) => store.mapData.screenData;
 
 /* Wrapper Function selectors that return methods that can be called later */
 export function doesEntranceLinkExistWrapper(store: Store): Function {
@@ -50,6 +50,6 @@ export function getLocationByIdWrapper(store: Store): Function {
 
 export function getLocationsOnScreenWrapper(store: Store): Function {
   return (worldType: WorldType, screenIndex: number): Array<string> => {
-    return SCREEN_DATA[worldType][screenIndex];
+    return getScreenData(store)[worldType][screenIndex];
   }
 }

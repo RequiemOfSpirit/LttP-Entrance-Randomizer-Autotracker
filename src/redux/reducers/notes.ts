@@ -96,5 +96,5 @@ function getLocationNameForNotes(locationId: string, root: Store): string {
     return "(DARK CAVE)";
   }
 
-  return root.entranceLocations[locationId].name;
+  return root.mapData.entranceLocations[locationId].name;
 }

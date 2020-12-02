@@ -1,6 +1,6 @@
 import { createStore } from "redux";
 import rootReducer from "./reducers";
-import { EntranceLocationList } from "../common/mapData";
+import { EntranceLocationList, ScreenData } from "../common/mapData";
 import {
   ConnectedDevice,
   ConnectionStatus,
@@ -13,9 +13,12 @@ import { NotesType } from "../common/notes";
 
 export interface Store {
   inventory: InventoryState;
+  mapData: {
+    entranceLocations: EntranceLocationList;
+    screenData: ScreenData;
+  };
   entranceLinks: EntranceLinks;
   notes: NotesType;
-  entranceLocations: EntranceLocationList;
   serverConnectionStatus: ConnectionStatus;
   devices: {
     availableDevices: DeviceList;
