@@ -1,6 +1,6 @@
 import { ActionType } from "../ActionTypes";
 import { Action } from "../actions";
-import { ConnectedDevice, DeviceList } from "../../common/devices";
+import { ConnectedDevice, ConnectionStatus, DeviceList } from "../../common/devices";
 
 export const deviceList = (state: DeviceList, action: Action): DeviceList => {
   switch (action.type) {
@@ -15,6 +15,15 @@ export const connectedDevice = (state: ConnectedDevice, action: Action): Connect
   switch (action.type) {
     case ActionType.UPDATE_CONNECTED_DEVICE:
       return action.payload as ConnectedDevice;
+    default:
+      return state;
+  }
+}
+
+export const serverConnectionStatus = (state: ConnectionStatus, action: Action): ConnectionStatus => {
+  switch (action.type) {
+    case ActionType.UPDATE_SERVER_CONNECTION_STATUS:
+      return action.payload as ConnectionStatus;
     default:
       return state;
   }

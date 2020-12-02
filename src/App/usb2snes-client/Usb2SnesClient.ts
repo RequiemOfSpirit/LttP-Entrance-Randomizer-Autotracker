@@ -17,40 +17,40 @@ interface Usb2SnesMessage {
   Operands?: Array<string>;
 }
 
-interface Usb2SnesClientConstructorParams {
+export interface Usb2SnesStoreAccessors {
   updateDeviceList: Function;
   updateConnectedDevice: Function;
+  updateServerConnectionStatus: Function;
+}
+
+interface Usb2SnesClientConstructorParams {
+  storeAccessors: Usb2SnesStoreAccessors;
 }
 
 export class Usb2SnesClient {
   protected socketConnection: WebSocket;
-  protected connectionStatus: ConnectionStatus = ConnectionStatus.INACTIVE;
   private serverURI: string;
   private commandHistory: Array<Command>;
   private updateDeviceList: Function;
   private updateConnectedDevice: Function;
+  private updateConnectionStatus: Function;
 
   constructor(params: Usb2SnesClientConstructorParams) {
     this.serverURI = "ws://127.0.0.1:8080";
-    this.updateDeviceList = params.updateDeviceList;
-    this.updateConnectedDevice = params.updateConnectedDevice;
+    this.updateDeviceList = params.storeAccessors.updateDeviceList;
+    this.updateConnectedDevice = params.storeAccessors.updateConnectedDevice;
+    this.updateConnectionStatus = params.storeAccessors.updateServerConnectionStatus;
     this.newConnectionToServer();
   }
 
-  get currentConnectionStatus(): ConnectionStatus {
-    return this.connectionStatus;
-  }
-
-  // TODO (BACKLOG): add `connectionStatus` to store and send to ConnectivityPage
   connect(deviceName: string): void {
-    this.connectionStatus = ConnectionStatus.INITIALIZING;
     this.sendMessage({
       Opcode: "Attach",
       Space: "SNES",
       Operands: [deviceName]
     });
 
-    this.dispatchUpdateEvent();
+    this.updateConnectionStatus(ConnectionStatus.CONNECTING);
     this.getInfo(deviceName);
   }
 
@@ -76,7 +76,7 @@ export class Usb2SnesClient {
 
   protected onConnectionOpen(event: Event): void {
     console.log("Open:", event);
-    this.connectionStatus = ConnectionStatus.IDLE;
+    this.updateConnectionStatus(ConnectionStatus.IDLE);
     this.listDevices();
   }
 
@@ -102,13 +102,10 @@ export class Usb2SnesClient {
         }
         this.updateConnectedDevice(connectedDevice);
 
-        // TODO (Backlog): Notification here instead
         console.log("Connected");
-        this.connectionStatus = ConnectionStatus.CONNECTED;
+        this.updateConnectionStatus(ConnectionStatus.CONNECTED);
         break;
     }
-
-    this.dispatchUpdateEvent();
   }
 
   protected onError(event: Event): void {
@@ -117,25 +114,19 @@ export class Usb2SnesClient {
 
   protected onConnectionClose(event: CloseEvent): void {
     console.log("Close:", event);
-    if (this.connectionStatus === ConnectionStatus.INACTIVE) {
-      console.error(`Failed to connect to the server`);
-    }
-
-    this.connectionStatus = ConnectionStatus.INACTIVE;
-    this.dispatchUpdateEvent();
-  }
-
-  protected dispatchUpdateEvent() {
-    // TODO (BACKLOG): Add more info? Like Ready State? And call this event again if nothing has changed?
-    let event = new Event("ConnectionUpdate");
-    window.dispatchEvent(event);
+    this.updateConnectionStatus(ConnectionStatus.INACTIVE);
   }
 
   protected sendMessage(message: Usb2SnesMessage): void {
-    if (this.socketConnection.readyState === 1) {
-      this.socketConnection.send(JSON.stringify(message));
-    } else {
-      console.warn(`Unable to send message "${message.Opcode}". Still Connecting.`);
+    switch (this.socketConnection.readyState) {
+      case 0:
+        console.error(`Unable to send message "${message.Opcode}". Still connecting to the server.`);
+        break;
+      case 1:
+        this.socketConnection.send(JSON.stringify(message));
+        break;
+      default:
+        console.error(`Unable to send message "${message.Opcode}". Please reconnect to the server.`);
     }
   }
 

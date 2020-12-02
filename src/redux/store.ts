@@ -1,7 +1,11 @@
 import { createStore } from "redux";
 import rootReducer from "./reducers";
 import { EntranceLocationList } from "../common/mapData";
-import { ConnectedDevice, DeviceList } from "../common/devices";
+import {
+  ConnectedDevice,
+  ConnectionStatus,
+  DeviceList
+} from "../common/devices";
 import { SettingsType } from "../common/settings";
 import { InventoryState } from "../common/inventory";
 import { EntranceLinks } from "../common/locations";
@@ -12,8 +16,11 @@ export interface Store {
   entranceLinks: EntranceLinks;
   notes: NotesType;
   entranceLocations: EntranceLocationList;
-  deviceList: DeviceList;
-  connectedDevice: ConnectedDevice;
+  serverConnectionStatus: ConnectionStatus;
+  devices: {
+    availableDevices: DeviceList;
+    connectedDevice: ConnectedDevice;
+  };
   settings: SettingsType;
 }
 

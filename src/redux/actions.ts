@@ -1,12 +1,12 @@
 import { ActionType } from "./ActionTypes";
-import { ConnectedDevice, DeviceList } from "../common/devices";
+import { ConnectedDevice, ConnectionStatus, DeviceList } from "../common/devices";
 import { InventoryStateUpdate } from "../common/inventory";
 import { EntranceLinks } from "../common/locations";
 import { AppSettings } from "../common/settings";
 
 export interface Action {
-  type: ActionType,
-  payload?: { [key in (string | number)]: any }
+  type: ActionType;
+  payload?: any;
 }
 
 export function addEntranceLinks(newEntranceLinks: EntranceLinks): Action {
@@ -34,6 +34,13 @@ export function updateConnectedDevice(connectedDevice: ConnectedDevice): Action 
   return {
     type: ActionType.UPDATE_CONNECTED_DEVICE,
     payload: connectedDevice
+  };
+}
+
+export function updateServerConnectionStatus(connectionStatus: ConnectionStatus): Action {
+  return {
+    type: ActionType.UPDATE_SERVER_CONNECTION_STATUS,
+    payload: connectionStatus
   };
 }
 

@@ -4,6 +4,7 @@ import { Store } from '../redux/store';
 import {
   addEntranceLinks,
   updateInventory,
+  updateServerConnectionStatus,
   updateDeviceList,
   updateConnectedDevice,
   updateAppSettings
@@ -14,6 +15,7 @@ import {
   doesEntranceLinkExistWrapper,
   getNotes,
   getInventoryState,
+  getServerConnectionStatus,
   getDeviceList,
   getConnectedDevice,
   getSettings
@@ -32,22 +34,30 @@ import { NotesType } from '../common/notes';
 import { Settings } from './Settings';
 import { SettingsType, AppSettings } from '../common/settings';
 
-interface AppProps {
-  globalConfig: GlobalConfig;
+interface StoreStateProps {
   notes: NotesType;
   inventoryState: InventoryState;
   deviceList: DeviceList;
   connectedDevice: ConnectedDevice;
+  serverConnectionStatus: ConnectionStatus;
   settings: SettingsType;
   getLocationById: Function;
   getLocationsOnScreen: Function;
   doesEntranceLinkExist: Function;
+}
+
+interface StoreReducerProps {
   addEntranceLinks: Function;
   updateInventory: Function;
+  updateServerConnectionStatus: Function;
   updateDeviceList: Function;
   updateConnectedDevice: Function;
   updateAppSettings: Function;
 }
+
+type AppProps = StoreStateProps & StoreReducerProps & {
+  globalConfig: GlobalConfig;
+};
 
 interface AppState {
   config: AppConfig;
@@ -64,8 +74,11 @@ class App extends Component<AppProps, AppState> {
   state: AppState = {
     config: this.props.globalConfig.appConfig,
     client: new LttPClient({
-      updateDeviceList: this.updateDeviceList.bind(this),
-      updateConnectedDevice: this.updateConnectedDevice.bind(this),
+      storeAccessors: {
+        updateDeviceList: this.updateStoreDeviceList.bind(this),
+        updateConnectedDevice: this.updateStoreConnectedDevice.bind(this),
+        updateServerConnectionStatus: this.updateStoreServerConnectionStatus.bind(this),
+      },
       config: this.props.globalConfig.lttpClientConfig
     }),
     locationTracker: new LocationTracker({
@@ -83,32 +96,23 @@ class App extends Component<AppProps, AppState> {
     inventoryProcessIntervalId: this.props.globalConfig.appConfig.initialIntervalId
   };
 
-  constructor(props: AppProps) {
-    super(props);
-
-    // TODO (BACKLOG): Make updates more robust (maybe add an app state)
-    window.addEventListener("ConnectionUpdate", () => {
-      if (this.state.client.currentConnectionStatus === ConnectionStatus.CONNECTED) {
-        this.setupIntervals();
-        return;
-      }
-
-      // TODO: Fix this
-      if (this.state.locationPollIntervalId !== this.state.config.initialIntervalId) {
-        this.clearIntervals();
-        return;
-      }
-
-      this.setState({});
-    });
-  }
-
   componentDidUpdate(prevProps: AppProps) {
     this.state.locationTracker.updateStoreAccessors({
       doesEntranceLinkExist: this.props.doesEntranceLinkExist
     });
 
     this.state.itemTracker.updateCurrentInventory(this.props.inventoryState);
+
+    /**
+     * Connection Status updated
+     */
+    if (prevProps.serverConnectionStatus !== this.props.serverConnectionStatus) {
+      this.handleServerConnectionStatusChange(prevProps.serverConnectionStatus, this.props.serverConnectionStatus);
+    }
+  }
+
+  componentWillUnmount() {
+    this.clearIntervals();
   }
 
   render() {
@@ -134,11 +138,15 @@ class App extends Component<AppProps, AppState> {
   /**
    * Methods passed down to usb2snes client to update redux store
    */
-  private updateDeviceList(deviceList: DeviceList): void {
+  private updateStoreDeviceList(deviceList: DeviceList): void {
     this.props.updateDeviceList(deviceList);
   }
 
-  private updateConnectedDevice(connectedDevice: ConnectedDevice): void {
+  private updateStoreServerConnectionStatus(connectionStatus: ConnectionStatus): void {
+    this.props.updateServerConnectionStatus(connectionStatus);
+  }
+
+  private updateStoreConnectedDevice(connectedDevice: ConnectedDevice): void {
     this.props.updateConnectedDevice(connectedDevice);
   }
 
@@ -165,7 +173,30 @@ class App extends Component<AppProps, AppState> {
   }
 
   /* Interval handlers */
-  private setupIntervals(): void {
+  private handleServerConnectionStatusChange(
+    prevConnectionStatus: ConnectionStatus,
+    currentConnectionStatus: ConnectionStatus
+  ): void {
+    if (currentConnectionStatus === ConnectionStatus.CONNECTED) {
+      // Connection established to device. Start polling and return.
+      this.startPolling();
+      return;
+    }
+
+    if (prevConnectionStatus === ConnectionStatus.CONNECTED) {
+      // Connection to device disconnected. Stop any intervals that have been setup.
+      this.stopPolling();
+    }
+  }
+
+  private clearIntervals(): void {
+    window.clearInterval(this.state.locationPollIntervalId);
+    window.clearInterval(this.state.locationProcessIntervalId);
+    window.clearInterval(this.state.inventoryPollIntervalId);
+    window.clearInterval(this.state.inventoryProcessIntervalId);
+  }
+
+  private startPolling(): void {
     this.setState({
       locationPollIntervalId: window.setInterval(this.pollLocations.bind(this), this.state.config.locationPollIntervalLength),
       locationProcessIntervalId: window.setInterval(this.processLocations.bind(this), this.state.config.locationProcessIntervalLength),
@@ -174,11 +205,8 @@ class App extends Component<AppProps, AppState> {
     });
   }
 
-  private clearIntervals(): void {
-    window.clearInterval(this.state.locationPollIntervalId);
-    window.clearInterval(this.state.locationProcessIntervalId);
-    window.clearInterval(this.state.inventoryPollIntervalId);
-    window.clearInterval(this.state.inventoryProcessIntervalId);
+  private stopPolling(): void {
+    this.clearIntervals();
     this.setState({
       locationPollIntervalId: this.state.config.initialIntervalId,
       locationProcessIntervalId: this.state.config.initialIntervalId,
@@ -222,12 +250,13 @@ class App extends Component<AppProps, AppState> {
   }
 }
 
-function mapStoreStateToProps(store: Store) {
+function mapStoreStateToProps(store: Store): StoreStateProps {
   return {
     notes: getNotes(store),
     inventoryState: getInventoryState(store),
     deviceList: getDeviceList(store),
     connectedDevice: getConnectedDevice(store),
+    serverConnectionStatus: getServerConnectionStatus(store),
     settings: getSettings(store),
     getLocationById: getLocationByIdWrapper(store),
     getLocationsOnScreen: getLocationsOnScreenWrapper(store),
@@ -237,5 +266,12 @@ function mapStoreStateToProps(store: Store) {
 
 export default connect(
   mapStoreStateToProps,
-  { addEntranceLinks, updateInventory, updateDeviceList, updateConnectedDevice, updateAppSettings }
+  {
+    addEntranceLinks,
+    updateInventory,
+    updateServerConnectionStatus,
+    updateDeviceList,
+    updateConnectedDevice,
+    updateAppSettings
+  }
 )(App);

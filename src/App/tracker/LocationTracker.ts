@@ -7,7 +7,7 @@ type TrackLocationDataParam = {
 }
 type TrackLocationReturnValue = { source: string; destination: string; } | null;
 
-interface StoreAccessors {
+interface LocationTrackerStoreAccessors {
   getLocationById: Function;
   getLocationsOnScreen: Function;
   doesEntranceLinkExist: Function;
@@ -18,17 +18,17 @@ interface StoreAccessorsUpdateInput {
 }
 
 interface LocationTrackerConstructorParams {
-  storeAccessors: StoreAccessors;
+  storeAccessors: LocationTrackerStoreAccessors;
   config: LocationTrackerConfig;
 }
 
 export class LocationTracker {
   coupledEntrances: boolean;
-  storeAccessors: StoreAccessors;
+  storeAccessors: LocationTrackerStoreAccessors;
   config: LocationTrackerConfig;
 
   constructor(params: LocationTrackerConstructorParams) {
-    // TODO: Push to constants
+    // TODO: Push to config/settings
     this.coupledEntrances = true;
     this.storeAccessors = params.storeAccessors;
     this.config = params.config;
@@ -75,6 +75,7 @@ export class LocationTracker {
         continue;
       }
 
+      // TODO: Stop coupling entrances here
       newEntranceLinks[entranceConnectionData.source] = entranceConnectionData.destination;
       if (this.coupledEntrances) {
         newEntranceLinks[entranceConnectionData.destination] = entranceConnectionData.source;
@@ -109,7 +110,7 @@ export class LocationTracker {
     }
 
     if (startLocationId === "" || endLocationId === "") {
-      // TODO (BACKLOG): Be more specific
+      // TODO (BACKLOG): Be more specific. Handle boss room warps and title screen starts.
       console.warn("Unable to determine EntranceLink");
       return null;
     }
