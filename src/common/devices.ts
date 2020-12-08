@@ -13,6 +13,7 @@ export enum ConnectionStatus {
   CONNECTED = "Connected"  // Connected to a Device
 }
 
+export const EMPTY_DEVICE_LIST: DeviceList = [];
 export const NULL_DEVICE: ConnectedDevice = {
   name: null,
   info: []

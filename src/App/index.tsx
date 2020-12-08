@@ -7,6 +7,7 @@ import {
   updateServerConnectionStatus,
   updateDeviceList,
   updateConnectedDevice,
+  resetDeviceData,
   updateAppSettings
 } from "../redux/actions";
 import {
@@ -52,6 +53,7 @@ interface StoreReducerProps {
   updateServerConnectionStatus: Function;
   updateDeviceList: Function;
   updateConnectedDevice: Function;
+  resetDeviceData: Function;
   updateAppSettings: Function;
 }
 
@@ -77,6 +79,7 @@ class App extends Component<AppProps, AppState> {
       storeAccessors: {
         updateDeviceList: this.updateStoreDeviceList.bind(this),
         updateConnectedDevice: this.updateStoreConnectedDevice.bind(this),
+        resetDeviceData: this.resetStoreDeviceData.bind(this),
         updateServerConnectionStatus: this.updateStoreServerConnectionStatus.bind(this),
       },
       config: this.props.globalConfig.lttpClientConfig
@@ -148,6 +151,10 @@ class App extends Component<AppProps, AppState> {
 
   private updateStoreConnectedDevice(connectedDevice: ConnectedDevice): void {
     this.props.updateConnectedDevice(connectedDevice);
+  }
+
+  private resetStoreDeviceData(): void {
+    this.props.resetDeviceData();
   }
 
   /**
@@ -272,6 +279,7 @@ export default connect(
     updateServerConnectionStatus,
     updateDeviceList,
     updateConnectedDevice,
+    resetDeviceData,
     updateAppSettings
   }
 )(App);

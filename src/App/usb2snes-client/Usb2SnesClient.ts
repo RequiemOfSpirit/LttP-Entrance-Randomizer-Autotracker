@@ -21,6 +21,7 @@ export interface Usb2SnesStoreAccessors {
   updateDeviceList: Function;
   updateConnectedDevice: Function;
   updateServerConnectionStatus: Function;
+  resetDeviceData: Function;
 }
 
 interface Usb2SnesClientConstructorParams {
@@ -34,12 +35,14 @@ export class Usb2SnesClient {
   private updateDeviceList: Function;
   private updateConnectedDevice: Function;
   private updateConnectionStatus: Function;
+  private resetDeviceData: Function;
 
   constructor(params: Usb2SnesClientConstructorParams) {
     this.serverURI = "ws://127.0.0.1:8080";
     this.updateDeviceList = params.storeAccessors.updateDeviceList;
     this.updateConnectedDevice = params.storeAccessors.updateConnectedDevice;
     this.updateConnectionStatus = params.storeAccessors.updateServerConnectionStatus;
+    this.resetDeviceData = params.storeAccessors.resetDeviceData;
     this.newConnectionToServer();
   }
 
@@ -132,8 +135,7 @@ export class Usb2SnesClient {
 
   // Initialize/Reset instance variable values
   protected resetData() {
-    this.updateDeviceList([]);
-    this.updateConnectedDevice(NULL_DEVICE);
+    this.resetDeviceData();
     this.commandHistory = [];
   }
 

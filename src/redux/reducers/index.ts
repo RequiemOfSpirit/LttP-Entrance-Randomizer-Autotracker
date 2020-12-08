@@ -8,7 +8,7 @@ import { Store } from "../store";
 import { Action } from "../actions";
 import { BASE_INVENTORY } from "../../common/inventory";
 import { ENTRANCE_LOCATIONS, SCREEN_DATA } from "../../common/mapData";
-import { ConnectionStatus, NULL_DEVICE } from "../../common/devices";
+import { ConnectionStatus, EMPTY_DEVICE_LIST, NULL_DEVICE } from "../../common/devices";
 import { BASE_SETTINGS } from "../../common/settings";
 
 const INITIAL_STORE_STATE: Store = {
@@ -24,7 +24,7 @@ const INITIAL_STORE_STATE: Store = {
   },
   serverConnectionStatus: ConnectionStatus.INACTIVE,
   devices: {
-    availableDevices: [],
+    availableDevices: EMPTY_DEVICE_LIST,
     connectedDevice: NULL_DEVICE,
   },
   settings: BASE_SETTINGS

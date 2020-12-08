@@ -37,6 +37,10 @@ export function updateConnectedDevice(connectedDevice: ConnectedDevice): Action 
   };
 }
 
+export function resetDeviceData(): Action {
+  return { type: ActionType.RESET_DEVICE_DATA };
+}
+
 export function updateServerConnectionStatus(connectionStatus: ConnectionStatus): Action {
   return {
     type: ActionType.UPDATE_SERVER_CONNECTION_STATUS,
