@@ -1,6 +1,5 @@
 import { Store } from "./store";
-import { EntranceLocationList, ScreenData } from "../common/mapData";
-import { NamedLocation, WorldType, EntranceLinks } from "../common/locations";
+import { EntranceLinks } from "../common/locations";
 import { InventoryState } from "../common/inventory";
 import { NotesType } from "../common/notes";
 import { ConnectedDevice, ConnectionStatus, DeviceList } from "../common/devices";
@@ -15,10 +14,8 @@ export const getServerConnectionStatus = (store: Store): ConnectionStatus => sto
 // TODO (Backlog): Temporary settings selector. Needs replacement when location/tag based settings are added
 export const getSettings = (store: Store): SettingsType => store.settings;
 const getEntranceLinks = (store: Store): EntranceLinks => store.entranceLinks;
-const getEntranceLocations = (store: Store): EntranceLocationList => store.mapData.entranceLocations;
-const getScreenData = (store: Store): ScreenData => store.mapData.screenData;
 
-/* Wrapper Function selectors that return methods that can be called later */
+/* Wrapper Functions that return methods that can be called later */
 export function doesEntranceLinkExistWrapper(store: Store): Function {
   return (startLocationId: string, endLocationId: string, additionalEntranceLinks: EntranceLinks = {}): boolean => {
     const currentEntranceLinks = {
@@ -44,17 +41,5 @@ export function doesEntranceLinkExistWrapper(store: Store): Function {
     }
 
     return false;
-  }
-}
-
-export function getLocationByIdWrapper(store: Store): Function {
-  return (locationId: string): NamedLocation => {
-    return getEntranceLocations(store)[locationId];
-  }
-}
-
-export function getLocationsOnScreenWrapper(store: Store): Function {
-  return (worldType: WorldType, screenIndex: number): Array<string> => {
-    return getScreenData(store)[worldType][screenIndex];
   }
 }

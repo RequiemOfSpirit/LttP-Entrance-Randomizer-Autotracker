@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from "react-redux";
+
+// Redux Store
 import { Store } from '../redux/store';
 import {
   addEntranceLinks,
@@ -11,8 +13,6 @@ import {
   updateAppSettings
 } from "../redux/actions";
 import {
-  getLocationByIdWrapper,
-  getLocationsOnScreenWrapper,
   doesEntranceLinkExistWrapper,
   getNotes,
   getInventoryState,
@@ -21,19 +21,28 @@ import {
   getConnectedDevice,
   getSettings
 } from '../redux/selectors';
-import { Notes } from './Notes';
-import Connections from './Connections';
+
+// Helper Classes
 import { LttPClient } from './usb2snes-client/LttPClient';
 import { LocationTracker } from './tracker/LocationTracker';
 import { ItemTracker } from './tracker/ItemTracker';
+
+// Common Types, Classes
 import { GlobalConfig, AppConfig } from '../common/config';
 import { Location, EntranceLinks } from '../common/locations';
 import { InventoryState, InventoryStateUpdate } from '../common/inventory';
 import { DeviceList, DeviceName, ConnectionStatus, ConnectedDevice } from '../common/devices';
-import './index.css';
 import { NotesType } from '../common/notes';
-import { Settings } from './Settings';
 import { SettingsType, AppSettings } from '../common/settings';
+
+// React Components
+import Connections from './Connections';
+import { Notes } from './Notes';
+import { Settings } from './Settings';
+import './index.css';
+
+// Utility Methods
+import { getLocationById, getLocationsOnScreen } from '../common/mapData';
 
 interface StoreStateProps {
   notes: NotesType;
@@ -42,8 +51,6 @@ interface StoreStateProps {
   connectedDevice: ConnectedDevice;
   serverConnectionStatus: ConnectionStatus;
   settings: SettingsType;
-  getLocationById: Function;
-  getLocationsOnScreen: Function;
   doesEntranceLinkExist: Function;
 }
 
@@ -85,9 +92,9 @@ class App extends Component<AppProps, AppState> {
       config: this.props.globalConfig.lttpClientConfig
     }),
     locationTracker: new LocationTracker({
-      storeAccessors: {
-        getLocationById: this.props.getLocationById,
-        getLocationsOnScreen: this.props.getLocationsOnScreen,
+      utilityMethods: {
+        getLocationById,
+        getLocationsOnScreen,
         doesEntranceLinkExist: this.props.doesEntranceLinkExist
       },
       config: this.props.globalConfig.locationTrackerConfig
@@ -100,7 +107,7 @@ class App extends Component<AppProps, AppState> {
   };
 
   componentDidUpdate(prevProps: AppProps) {
-    this.state.locationTracker.updateStoreAccessors({
+    this.state.locationTracker.updateUtilityFunctions({
       doesEntranceLinkExist: this.props.doesEntranceLinkExist
     });
 
@@ -265,8 +272,6 @@ function mapStoreStateToProps(store: Store): StoreStateProps {
     connectedDevice: getConnectedDevice(store),
     serverConnectionStatus: getServerConnectionStatus(store),
     settings: getSettings(store),
-    getLocationById: getLocationByIdWrapper(store),
-    getLocationsOnScreen: getLocationsOnScreenWrapper(store),
     doesEntranceLinkExist: doesEntranceLinkExistWrapper(store)
   }
 }

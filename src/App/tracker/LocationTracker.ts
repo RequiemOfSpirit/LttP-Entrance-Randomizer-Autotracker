@@ -7,30 +7,30 @@ type TrackLocationDataParam = {
 }
 type TrackLocationReturnValue = { source: string; destination: string; } | null;
 
-interface LocationTrackerStoreAccessors {
+interface LocationTrackerUtilityMethods {
   getLocationById: Function;
   getLocationsOnScreen: Function;
   doesEntranceLinkExist: Function;
 }
 
-interface StoreAccessorsUpdateInput {
+interface UtilityFunctionsUpdateType {
   doesEntranceLinkExist?: Function;
 }
 
 interface LocationTrackerConstructorParams {
-  storeAccessors: LocationTrackerStoreAccessors;
+  utilityMethods: LocationTrackerUtilityMethods;
   config: LocationTrackerConfig;
 }
 
 export class LocationTracker {
   coupledEntrances: boolean;
-  storeAccessors: LocationTrackerStoreAccessors;
+  utilityMethods: LocationTrackerUtilityMethods;
   config: LocationTrackerConfig;
 
   constructor(params: LocationTrackerConstructorParams) {
     // TODO: Push to config/settings
     this.coupledEntrances = true;
-    this.storeAccessors = params.storeAccessors;
+    this.utilityMethods = params.utilityMethods;
     this.config = params.config;
   }
 
@@ -85,15 +85,15 @@ export class LocationTracker {
     return newEntranceLinks;
   }
 
-  updateStoreAccessors(storeAccessorsUpdate: StoreAccessorsUpdateInput): void {
-    this.storeAccessors = {
-      ...this.storeAccessors,
-      ...storeAccessorsUpdate
+  updateUtilityFunctions(updatedFunctions: UtilityFunctionsUpdateType): void {
+    this.utilityMethods = {
+      ...this.utilityMethods,
+      ...updatedFunctions
     };
   }
 
   /**
-   * Backups are provided in this method because sometimes when reading data from the
+   * Backups are provided to this method because sometimes when reading data from the
    *   USB2SNES server, incorrect values are returned. The next read seems to give correct results.
    * Having backups during a `getEntranceLink` call may cause locations to get processed twice
    *   but can prevent data from being lost.
@@ -115,7 +115,7 @@ export class LocationTracker {
       return null;
     }
 
-    if (this.storeAccessors.doesEntranceLinkExist(startLocationId, endLocationId, currentEntranceLinks)) {
+    if (this.utilityMethods.doesEntranceLinkExist(startLocationId, endLocationId, currentEntranceLinks)) {
       return null;
     }
 
@@ -136,7 +136,7 @@ export class LocationTracker {
       screenIndex = currentLocation.underworldIndex;
     }
 
-    const locationsOnScreen = this.storeAccessors.getLocationsOnScreen(worldType, screenIndex);
+    const locationsOnScreen = this.utilityMethods.getLocationsOnScreen(worldType, screenIndex);
     let requiredLocationId = "";
 
     if (locationsOnScreen === undefined) {
@@ -149,7 +149,7 @@ export class LocationTracker {
 
     try {
       for (let locationId of locationsOnScreen) {
-        const location = this.storeAccessors.getLocationById(locationId);
+        const location = this.utilityMethods.getLocationById(locationId);
         if (
           Math.abs(location.coordinates.x - currentX) < this.config.entranceTriggerWidth &&
           Math.abs(location.coordinates.y - currentY) < this.config.entranceTriggerHeight

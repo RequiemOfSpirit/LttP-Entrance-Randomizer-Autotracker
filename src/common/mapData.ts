@@ -300,7 +300,7 @@ const RAW_LOCATIONS: { [key: string]: RawLocation } = {
   fi58mt715: { x: 3704, y: 9688, name: 'Hammer Pegs Inside', screenIndex: 295, worldType: 1 }
 };
 
-export const ENTRANCE_LOCATIONS: EntranceLocationList = Object.assign(
+const ENTRANCE_LOCATIONS: EntranceLocationList = Object.assign(
   {}, 
   ...Object.keys(RAW_LOCATIONS).map(entranceId => (
     {
@@ -310,7 +310,7 @@ export const ENTRANCE_LOCATIONS: EntranceLocationList = Object.assign(
 );
 
 // List of entrance ids indexed by their screen index
-export const SCREEN_DATA: ScreenData = {
+const SCREEN_DATA: ScreenData = {
   0: {  // Overworld
     '0': ['64b24cv54', 'j8lozfmed'],
     '2': ['1fd6eym4w', '0f2rc62hk', 'g41e5kc7k'],
@@ -524,6 +524,16 @@ export const SCREEN_DATA: ScreenData = {
   }
 }
 
+// Helper methods
+export function getLocationById(locationId: string): NamedLocation {
+  return ENTRANCE_LOCATIONS[locationId];
+}
+
+export function getLocationsOnScreen(worldType: WorldType, screenIndex: number): Array<string> {
+  return SCREEN_DATA[worldType][screenIndex];
+}
+
+/* TAGS */
 interface Tag {
   name: string;
   editable: boolean;

@@ -3,7 +3,7 @@ import { Action } from "../actions";
 import { Store } from "../store";
 import { EntranceLinks } from "../../common/locations";
 import { BinaryItemState, InventoryStateUpdate } from "../../common/inventory";
-import { TAGS } from "../../common/mapData";
+import { getLocationById, TAGS } from "../../common/mapData";
 import { NotesType } from "../../common/notes";
 
 export default function(state: NotesType, action: Action, root: Store): NotesType {
@@ -96,5 +96,5 @@ function getLocationNameForNotes(locationId: string, root: Store): string {
     return "(DARK CAVE)";
   }
 
-  return root.mapData.entranceLocations[locationId].name;
+  return getLocationById(locationId).name;
 }

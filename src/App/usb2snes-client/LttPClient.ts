@@ -76,7 +76,7 @@ export class LttPClient extends Usb2SnesClient {
 
     if (dataArray.length === this.config.inventorySegment.bufferLength) {
       this.latestInventoryState = this.createInventoryState(dataArray);
-      return
+      return;
     }
   }
 
