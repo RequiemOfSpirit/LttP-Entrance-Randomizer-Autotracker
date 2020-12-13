@@ -1,4 +1,4 @@
-import { Usb2SnesStoreAccessors, Usb2SnesClient } from "./Usb2SnesClient";
+import { Usb2SnesCallbackMethods, Usb2SnesClient } from "./Usb2SnesClient";
 import { LttpClientConfig } from "../../common/config";
 import { Location, WorldType } from "../../common/locations";
 import { InventoryState, BASE_INVENTORY, RawInventoryState } from "../../common/inventory";
@@ -11,7 +11,7 @@ declare global {
 }
 
 interface LttpClientConstructorParams {
-  storeAccessors: Usb2SnesStoreAccessors;
+  callbackMethods: Usb2SnesCallbackMethods;
   config: LttpClientConfig;
 }
 
@@ -21,7 +21,7 @@ export class LttPClient extends Usb2SnesClient {
   config: LttpClientConfig;
 
   constructor(params: LttpClientConstructorParams) {
-    super({ storeAccessors: params.storeAccessors });
+    super({ callbackMethods: params.callbackMethods });
     this.config = params.config;
   }
 

@@ -1,4 +1,4 @@
-import { DeviceName, ConnectionStatus, ConnectedDevice } from "../../common/devices";
+import { DeviceName, ConnectionStatus, ConnectedDevice, DeviceList } from "../../common/devices";
 
 enum CommandType {
   LIST = "DeviceList",
@@ -17,32 +17,33 @@ interface Usb2SnesMessage {
   Operands?: Array<string>;
 }
 
-export interface Usb2SnesStoreAccessors {
-  updateDeviceList: Function;
-  updateConnectedDevice: Function;
-  updateServerConnectionStatus: Function;
-  resetDeviceData: Function;
+export interface Usb2SnesCallbackMethods {
+  listDevicesCallback: (deviceList: DeviceList) => void;
+  getDeviceInfoCallback: (deviceInfo: ConnectedDevice) => void;
+  connectionStatusUpdateCallback: (connectionStatus: ConnectionStatus) => void;
 }
 
 interface Usb2SnesClientConstructorParams {
-  storeAccessors: Usb2SnesStoreAccessors;
+  callbackMethods: Usb2SnesCallbackMethods;
 }
 
 export class Usb2SnesClient {
   protected socketConnection: WebSocket;
-  private serverURI: string;
   private commandHistory: Array<Command>;
-  private updateDeviceList: Function;
-  private updateConnectedDevice: Function;
-  private updateConnectionStatus: Function;
-  private resetDeviceData: Function;
+
+  // Config
+  private serverURI: string;
+
+  // Callback Methods
+  private onNewDeviceList: (deviceList: DeviceList) => void;
+  private onNewDeviceInfo: (deviceInfo: ConnectedDevice) => void;
+  private onConnectionStatusChange: (connectionStatus: ConnectionStatus) => void;
 
   constructor(params: Usb2SnesClientConstructorParams) {
     this.serverURI = "ws://127.0.0.1:8080";
-    this.updateDeviceList = params.storeAccessors.updateDeviceList;
-    this.updateConnectedDevice = params.storeAccessors.updateConnectedDevice;
-    this.updateConnectionStatus = params.storeAccessors.updateServerConnectionStatus;
-    this.resetDeviceData = params.storeAccessors.resetDeviceData;
+    this.onNewDeviceList = params.callbackMethods.listDevicesCallback;
+    this.onNewDeviceInfo = params.callbackMethods.getDeviceInfoCallback;
+    this.onConnectionStatusChange = params.callbackMethods.connectionStatusUpdateCallback;
     this.newConnectionToServer();
   }
 
@@ -53,7 +54,7 @@ export class Usb2SnesClient {
       Operands: [deviceName]
     });
 
-    this.updateConnectionStatus(ConnectionStatus.CONNECTING);
+    this.onConnectionStatusChange(ConnectionStatus.CONNECTING);
     this.getInfo(deviceName);
   }
 
@@ -65,8 +66,30 @@ export class Usb2SnesClient {
     this.newConnectionToServer();
   }
 
-  refreshDeviceList(): void {
-    this.listDevices();
+  listDevices(): void {
+    const command: Command = {
+      type: CommandType.LIST,
+      params: {}
+    };
+    this.commandHistory.push(command);
+
+    this.sendMessage({
+      Opcode: "DeviceList",
+      Space: "SNES"
+    });
+  }
+
+  getInfo(deviceName: DeviceName): void {
+    const command: Command = {
+      type: CommandType.INFO,
+      params: { deviceName }
+    };
+    this.commandHistory.push(command);
+
+    this.sendMessage({
+      Opcode: "Info",
+      Space: "SNES"
+    });
   }
 
   protected readAddress(address: string, bytes: string): void {
@@ -79,7 +102,7 @@ export class Usb2SnesClient {
 
   protected onConnectionOpen(event: Event): void {
     console.log("Open:", event);
-    this.updateConnectionStatus(ConnectionStatus.IDLE);
+    this.onConnectionStatusChange(ConnectionStatus.IDLE);
     this.listDevices();
   }
 
@@ -96,17 +119,17 @@ export class Usb2SnesClient {
 
     switch (request.type) {
       case CommandType.LIST:
-        this.updateDeviceList(data.Results);
+        this.onNewDeviceList(data.Results);
         break;
       case CommandType.INFO:
         let connectedDevice: ConnectedDevice = {
           name: request.params.deviceName,
           info: data.Results
         }
-        this.updateConnectedDevice(connectedDevice);
 
         console.log("Connected");
-        this.updateConnectionStatus(ConnectionStatus.CONNECTED);
+        this.onNewDeviceInfo(connectedDevice);
+        this.onConnectionStatusChange(ConnectionStatus.CONNECTED);
         break;
     }
   }
@@ -117,7 +140,7 @@ export class Usb2SnesClient {
 
   protected onConnectionClose(event: CloseEvent): void {
     console.log("Close:", event);
-    this.updateConnectionStatus(ConnectionStatus.INACTIVE);
+    this.onConnectionStatusChange(ConnectionStatus.INACTIVE);
   }
 
   protected sendMessage(message: Usb2SnesMessage): void {
@@ -135,7 +158,6 @@ export class Usb2SnesClient {
 
   // Initialize/Reset instance variable values
   protected resetData() {
-    this.resetDeviceData();
     this.commandHistory = [];
   }
 
@@ -147,31 +169,5 @@ export class Usb2SnesClient {
     this.socketConnection.onmessage = this.onMessage.bind(this);
     this.socketConnection.onerror = this.onError.bind(this);
     this.socketConnection.onclose = this.onConnectionClose.bind(this);
-  }
-
-  private listDevices(): void {
-    const command: Command = {
-      type: CommandType.LIST,
-      params: {}
-    };
-    this.commandHistory.push(command);
-
-    this.sendMessage({
-      Opcode: "DeviceList",
-      Space: "SNES"
-    });
-  }
-
-  private getInfo(deviceName: DeviceName): void {
-    const command: Command = {
-      type: CommandType.INFO,
-      params: { deviceName }
-    };
-    this.commandHistory.push(command);
-
-    this.sendMessage({
-      Opcode: "Info",
-      Space: "SNES"
-    });
   }
 }

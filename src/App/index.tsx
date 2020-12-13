@@ -83,11 +83,10 @@ class App extends Component<AppProps, AppState> {
   state: AppState = {
     config: this.props.globalConfig.appConfig,
     client: new LttPClient({
-      storeAccessors: {
-        updateDeviceList: this.updateStoreDeviceList.bind(this),
-        updateConnectedDevice: this.updateStoreConnectedDevice.bind(this),
-        resetDeviceData: this.resetStoreDeviceData.bind(this),
-        updateServerConnectionStatus: this.updateStoreServerConnectionStatus.bind(this),
+      callbackMethods: {
+        listDevicesCallback: this.updateStoreDeviceList.bind(this),
+        getDeviceInfoCallback: this.updateStoreConnectedDevice.bind(this),
+        connectionStatusUpdateCallback: this.updateStoreServerConnectionStatus.bind(this),
       },
       config: this.props.globalConfig.lttpClientConfig
     }),
@@ -160,15 +159,11 @@ class App extends Component<AppProps, AppState> {
     this.props.updateConnectedDevice(connectedDevice);
   }
 
-  private resetStoreDeviceData(): void {
-    this.props.resetDeviceData();
-  }
-
   /**
    * Methods passed to connections page
    */
   private refreshDeviceList(): void {
-    this.state.client.refreshDeviceList();
+    this.state.client.listDevices();
   }
 
   private connectToDevice(deviceName: DeviceName): void {
@@ -176,6 +171,7 @@ class App extends Component<AppProps, AppState> {
   }
 
   private reconnectToServer(): void {
+    this.props.resetDeviceData();
     this.state.client.reconnectToServer();
   }
 
@@ -269,8 +265,7 @@ function mapStoreStateToProps(store: Store): StoreStateProps {
     notes: getNotes(store),
     inventoryState: getInventoryState(store),
     deviceList: getDeviceList(store),
-    connectedDevice: getConnectedDevice(store),
-    serverConnectionStatus: getServerConnectionStatus(store),
+    connectedDevice: getConnectedDevice(store),serverConnectionStatus: getServerConnectionStatus(store),
     settings: getSettings(store),
     doesEntranceLinkExist: doesEntranceLinkExistWrapper(store)
   }
