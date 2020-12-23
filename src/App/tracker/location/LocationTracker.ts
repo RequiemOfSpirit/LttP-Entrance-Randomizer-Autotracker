@@ -7,10 +7,6 @@ interface LocationTrackerUtilityMethods {
   doesEntranceLinkExist: Function;
 }
 
-interface UtilityFunctionsUpdateType {
-  doesEntranceLinkExist?: Function;
-}
-
 interface LocationTrackerConstructorParams {
   utilityMethods: LocationTrackerUtilityMethods;
   config: LocationTrackerConfigType;
@@ -23,13 +19,6 @@ export class LocationTracker {
   constructor(params: LocationTrackerConstructorParams) {
     this.utilityMethods = params.utilityMethods;
     this.config = params.config;
-  }
-
-  updateUtilityFunctions(updatedFunctions: UtilityFunctionsUpdateType): void {
-    this.utilityMethods = {
-      ...this.utilityMethods,
-      ...updatedFunctions
-    };
   }
 
   /**

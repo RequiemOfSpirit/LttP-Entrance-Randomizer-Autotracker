@@ -113,7 +113,7 @@ class App extends Component<AppProps, AppState> {
       utilityMethods: {
         getLocationById,
         getLocationsOnScreen,
-        doesEntranceLinkExist: this.props.doesEntranceLinkExist
+        doesEntranceLinkExist: this.doesEntranceLinkExist.bind(this)
       },
       config: this.props.globalConfig.locationTrackerConfig
     }),
@@ -124,13 +124,7 @@ class App extends Component<AppProps, AppState> {
   };
 
   componentDidUpdate(prevProps: AppProps) {
-    this.state.locationTracker.updateUtilityFunctions({
-      doesEntranceLinkExist: this.props.doesEntranceLinkExist
-    });
-
-    /**
-     * Connection Status updated
-     */
+    // Connection Status updated
     if (prevProps.serverConnectionStatus !== this.props.serverConnectionStatus) {
       this.handleServerConnectionStatusChange(prevProps.serverConnectionStatus, this.props.serverConnectionStatus);
     }
@@ -217,6 +211,13 @@ class App extends Component<AppProps, AppState> {
       default:
         console.error("Unknown Memory Segment Type");
     }
+  }
+
+  /**
+   * Methods passed to LocationTracker instance
+   */
+  private doesEntranceLinkExist(startLocationId: string, endLocationId: string): boolean {
+    return this.props.doesEntranceLinkExist(startLocationId, endLocationId);
   }
 
   /**
