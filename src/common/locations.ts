@@ -1,9 +1,29 @@
-export type EntranceLinks = { [key: string]: string };
+export type LocationWithBackup = {
+  // The main location that is read from this object
+  main: Location,
+
+  // Backup location (previous/next location read) incase the main location contained incorrect data
+  backup: Location
+};
+
+// Type used for storing and processing the stream of locations read from the game
+export type LocationLinkWithBackups = {
+  previous: LocationWithBackup,
+  next: LocationWithBackup
+};
+
+export type EntranceLinksType = { [key: string]: string };
+export type NewEntranceLinkType = {
+  source: string;
+  destination: string;
+  doesExist: boolean;
+};
 
 export enum WorldType {
   OVERWORLD = 0,
   UNDERWORLD = 1
-}
+};
+export const UNUSED_WORLD_TYPE_INDEX = -1;
 
 export class Location {
   readonly worldType: number;
@@ -11,6 +31,7 @@ export class Location {
   readonly underworldIndex: number;
   readonly coordinates: { x: number, y: number };
 
+  // TODO: Accept only screenindex in constructor
   constructor(worldType: number, owIndex: number, uwIndex: number, xPosition: number, yPosition: number) {
     this.worldType = (worldType as WorldType);
     this.overworldIndex = owIndex;

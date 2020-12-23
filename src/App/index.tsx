@@ -4,7 +4,7 @@ import { connect } from "react-redux";
 // Redux Store
 import { Store } from '../redux/store';
 import {
-  addEntranceLinks,
+  addEntranceLink,
   updateInventory,
   updateServerConnectionStatus,
   updateDeviceList,
@@ -23,15 +23,17 @@ import {
 } from '../redux/selectors';
 
 // Helper Classes
-import { LttPClient } from './usb2snes-client/LttPClient';
-import { LocationTracker } from './tracker/LocationTracker';
-import { ItemTracker } from './tracker/ItemTracker';
+import { Usb2SnesClient } from './usb2snes-client/Usb2SnesClient';
+import { LttpMemoryParser } from './parser/LttpMemoryParser';
+import { LocationBuffer } from './tracker/location/LocationBuffer';
+import { LocationTracker } from './tracker/location/LocationTracker';
+import { ItemTracker } from './tracker/item/ItemTracker';
 
 // Common Types, Classes
-import { GlobalConfig, AppConfig } from '../common/config';
-import { Location, EntranceLinks } from '../common/locations';
+import { GlobalConfigType, AppConfigType, MemorySegmentConfigType } from '../common/config';
+import { Location, LocationLinkWithBackups, NewEntranceLinkType } from '../common/locations';
 import { InventoryState, InventoryStateUpdate } from '../common/inventory';
-import { DeviceList, DeviceName, ConnectionStatus, ConnectedDevice } from '../common/devices';
+import { DeviceList, DeviceName, ConnectionStatus, ConnectedDevice, MemorySegmentType } from '../common/devices';
 import { NotesType } from '../common/notes';
 import { SettingsType, AppSettings } from '../common/settings';
 
@@ -55,7 +57,7 @@ interface StoreStateProps {
 }
 
 interface StoreReducerProps {
-  addEntranceLinks: Function;
+  addEntranceLink: Function;
   updateInventory: Function;
   updateServerConnectionStatus: Function;
   updateDeviceList: Function;
@@ -65,31 +67,48 @@ interface StoreReducerProps {
 }
 
 type AppProps = StoreStateProps & StoreReducerProps & {
-  globalConfig: GlobalConfig;
+  globalConfig: GlobalConfigType;
 };
 
 interface AppState {
-  config: AppConfig;
-  client: LttPClient;
+  config: AppConfigType;
+
+  // Helper classes
+  client: Usb2SnesClient;
+  parser: LttpMemoryParser;
   locationTracker: LocationTracker;
   itemTracker: ItemTracker;
+
+  /**
+   * An object which stores the 4 most recent locations received from the game.
+   * When a new location appears, the oldest location is removed from the internal queue.
+   * The middle 2 locations (lcation 2 and 3) are the ones compared to determine entrance links.
+   * The locations at each end (location 1 and 4) serve as backups incase the above main locations
+   *  contain incorrect information.
+   * Locations can contain incorrect information due to a subroutine that runs in game that writes
+   *  over the overworld index value during the load routine. This incorrect value can be seen for
+   *  ~5 frames.
+   * Therefore this incorrect value will not be seen for 2 continuous Locations (due to the duration
+   *  of the poll interval) allowing the previous/next location to be used as a backup for any given
+   *  location.
+   */
+  locationBuffer: LocationBuffer;
+
+  // Interval tracking IDs
   locationPollIntervalId: number;
-  locationProcessIntervalId: number;
   inventoryPollIntervalId: number;
-  inventoryProcessIntervalId: number;
 }
 
 class App extends Component<AppProps, AppState> {
   state: AppState = {
     config: this.props.globalConfig.appConfig,
-    client: new LttPClient({
-      callbackMethods: {
-        listDevicesCallback: this.updateStoreDeviceList.bind(this),
-        getDeviceInfoCallback: this.updateStoreConnectedDevice.bind(this),
-        connectionStatusUpdateCallback: this.updateStoreServerConnectionStatus.bind(this),
-      },
-      config: this.props.globalConfig.lttpClientConfig
+    client: new Usb2SnesClient({
+      listDevicesCallback: this.updateStoreDeviceList.bind(this),
+      getDeviceInfoCallback: this.updateStoreConnectedDevice.bind(this),
+      readMemoryCallback: this.updateGameData.bind(this),
+      connectionStatusUpdateCallback: this.updateStoreServerConnectionStatus.bind(this),
     }),
+    parser: new LttpMemoryParser(),
     locationTracker: new LocationTracker({
       utilityMethods: {
         getLocationById,
@@ -98,19 +117,16 @@ class App extends Component<AppProps, AppState> {
       },
       config: this.props.globalConfig.locationTrackerConfig
     }),
-    itemTracker: new ItemTracker(this.props.inventoryState),
+    itemTracker: new ItemTracker(),
+    locationBuffer: new LocationBuffer(),
     locationPollIntervalId: this.props.globalConfig.appConfig.initialIntervalId,
-    locationProcessIntervalId: this.props.globalConfig.appConfig.initialIntervalId,
-    inventoryPollIntervalId: this.props.globalConfig.appConfig.initialIntervalId,
-    inventoryProcessIntervalId: this.props.globalConfig.appConfig.initialIntervalId
+    inventoryPollIntervalId: this.props.globalConfig.appConfig.initialIntervalId
   };
 
   componentDidUpdate(prevProps: AppProps) {
     this.state.locationTracker.updateUtilityFunctions({
       doesEntranceLinkExist: this.props.doesEntranceLinkExist
     });
-
-    this.state.itemTracker.updateCurrentInventory(this.props.inventoryState);
 
     /**
      * Connection Status updated
@@ -145,7 +161,7 @@ class App extends Component<AppProps, AppState> {
   }
 
   /**
-   * Methods passed down to usb2snes client to update redux store
+   * Callback methods passed down to usb2snes client
    */
   private updateStoreDeviceList(deviceList: DeviceList): void {
     this.props.updateDeviceList(deviceList);
@@ -157,6 +173,50 @@ class App extends Component<AppProps, AppState> {
 
   private updateStoreConnectedDevice(connectedDevice: ConnectedDevice): void {
     this.props.updateConnectedDevice(connectedDevice);
+  }
+
+  private async updateGameData(byteData: Blob, segmentAlias: string): Promise<void> {
+    switch (segmentAlias as MemorySegmentType) {
+      case MemorySegmentType.LOCATION:
+        const newLocation: Location = await this.state.parser.parseLocationSegment(byteData);
+        this.state.locationBuffer.add(newLocation);
+
+        let entranceLink: NewEntranceLinkType;
+        let locationLinkWithBackups: LocationLinkWithBackups;
+        try {
+          locationLinkWithBackups = this.state.locationBuffer.toLocationLinkWithBackups();
+        } catch (e) {
+          // Not enough locations to track entrance links
+          break;
+        }
+
+        try {
+          entranceLink = this.state.locationTracker.processLocationLink(locationLinkWithBackups);
+        } catch (e) {
+          // TODO (BACKLOG): Failure is due to inconsistent entrance links possibly due to ROM change. Handle better.
+          throw e;
+        }
+
+        if (entranceLink.doesExist) {
+          this.props.addEntranceLink(entranceLink);
+        }
+        break;
+
+      case MemorySegmentType.INVENTORY:
+        const currentInventoryState: InventoryState = await this.state.parser.parseInventorySegment(byteData);
+        let inventoryUpdate: InventoryStateUpdate = this.state.itemTracker.getInventoryStateUpdates(
+          this.props.inventoryState,
+          currentInventoryState
+        );
+
+        if (Object.keys(inventoryUpdate).length > 0) {
+          this.props.updateInventory(inventoryUpdate);
+        }
+        break;
+
+      default:
+        console.error("Unknown Memory Segment Type");
+    }
   }
 
   /**
@@ -194,24 +254,21 @@ class App extends Component<AppProps, AppState> {
     }
 
     if (prevConnectionStatus === ConnectionStatus.CONNECTED) {
-      // Connection to device disconnected. Stop any intervals that have been setup.
+      // Connection to device disconnected. Clear location queue. Stop any intervals that have been setup.
+      this.state.locationBuffer.clear();
       this.stopPolling();
     }
   }
 
   private clearIntervals(): void {
     window.clearInterval(this.state.locationPollIntervalId);
-    window.clearInterval(this.state.locationProcessIntervalId);
     window.clearInterval(this.state.inventoryPollIntervalId);
-    window.clearInterval(this.state.inventoryProcessIntervalId);
   }
 
   private startPolling(): void {
     this.setState({
-      locationPollIntervalId: window.setInterval(this.pollLocations.bind(this), this.state.config.locationPollIntervalLength),
-      locationProcessIntervalId: window.setInterval(this.processLocations.bind(this), this.state.config.locationProcessIntervalLength),
-      inventoryPollIntervalId: window.setInterval(this.pollInventoryState.bind(this), this.state.config.inventoryPollIntervalLength),
-      inventoryProcessIntervalId: window.setInterval(this.processInventoryState.bind(this), this.state.config.inventoryProcessIntervalLength)
+      locationPollIntervalId: window.setInterval(this.getCurrentLocation.bind(this), this.state.config.locationPollIntervalLength),
+      inventoryPollIntervalId: window.setInterval(this.getCurrentInventoryState.bind(this), this.state.config.inventoryPollIntervalLength)
     });
   }
 
@@ -219,44 +276,20 @@ class App extends Component<AppProps, AppState> {
     this.clearIntervals();
     this.setState({
       locationPollIntervalId: this.state.config.initialIntervalId,
-      locationProcessIntervalId: this.state.config.initialIntervalId,
-      inventoryPollIntervalId: this.state.config.initialIntervalId,
-      inventoryProcessIntervalId: this.state.config.initialIntervalId
+      inventoryPollIntervalId: this.state.config.initialIntervalId
     });
   }
 
-  /* Location Processing */
-  private pollLocations(): void {
-    this.state.client.readLocationSegment();
+  // Read location memory segment using the Usb2Snes client
+  private getCurrentLocation(): void {
+    const segmentConfig: MemorySegmentConfigType = this.props.globalConfig.memorySegmentConfig.locationSegment;
+    this.state.client.readMemory(segmentConfig.baseAddress, segmentConfig.readLength, segmentConfig.type);
   }
 
-  private processLocations(): void {
-    let newLocations: Array<Location> = this.state.client.popLocations();
-    let newEntranceLinks: EntranceLinks;
-    try {
-      newEntranceLinks = this.state.locationTracker.getNewEntranceLinks(newLocations);
-    } catch (e) {
-      // TODO (BACKLOG): Failure is due to inconsistent entrance links possibly due to ROM change. Handle better.
-      throw e;
-    }
-
-    if (Object.keys(newEntranceLinks).length > 0) {
-      this.props.addEntranceLinks(newEntranceLinks);
-    }
-  }
-
-  /* Inventory Processing */
-  private pollInventoryState(): void {
-    this.state.client.readInventorySegment();
-  }
-
-  private processInventoryState(): void {
-    let latestInventoryState: InventoryState = this.state.client.getLatestInventoryState();
-    let inventoryUpdate: InventoryStateUpdate = this.state.itemTracker.getInventoryStateUpdates(latestInventoryState);
-
-    if (Object.keys(inventoryUpdate).length > 0) {
-      this.props.updateInventory(inventoryUpdate);
-    }
+  // Read inventory memory segment using the Usb2Snes client
+  private getCurrentInventoryState(): void {
+    const segmentConfig: MemorySegmentConfigType = this.props.globalConfig.memorySegmentConfig.inventorySegment;
+    this.state.client.readMemory(segmentConfig.baseAddress, segmentConfig.readLength, segmentConfig.type);
   }
 }
 
@@ -274,7 +307,7 @@ function mapStoreStateToProps(store: Store): StoreStateProps {
 export default connect(
   mapStoreStateToProps,
   {
-    addEntranceLinks,
+    addEntranceLink,
     updateInventory,
     updateServerConnectionStatus,
     updateDeviceList,

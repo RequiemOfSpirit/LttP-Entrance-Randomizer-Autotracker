@@ -1,7 +1,7 @@
 import { ActionType } from "./ActionTypes";
 import { ConnectedDevice, ConnectionStatus, DeviceList } from "../common/devices";
 import { InventoryStateUpdate } from "../common/inventory";
-import { EntranceLinks } from "../common/locations";
+import { NewEntranceLinkType } from "../common/locations";
 import { AppSettings } from "../common/settings";
 
 export interface Action {
@@ -9,10 +9,10 @@ export interface Action {
   payload?: any;
 }
 
-export function addEntranceLinks(newEntranceLinks: EntranceLinks): Action {
+export function addEntranceLink(newEntranceLink: NewEntranceLinkType): Action {
   return {
-    type: ActionType.ADD_ENTRANCE_LINKS,
-    payload: newEntranceLinks
+    type: ActionType.ADD_ENTRANCE_LINK,
+    payload: newEntranceLink
   };
 }
 

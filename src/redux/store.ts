@@ -7,12 +7,12 @@ import {
 } from "../common/devices";
 import { SettingsType } from "../common/settings";
 import { InventoryState } from "../common/inventory";
-import { EntranceLinks } from "../common/locations";
+import { EntranceLinksType } from "../common/locations";
 import { NotesType } from "../common/notes";
 
 export interface Store {
   inventory: InventoryState;
-  entranceLinks: EntranceLinks;
+  entranceLinks: EntranceLinksType;
   notes: NotesType;
   serverConnectionStatus: ConnectionStatus;
   devices: {

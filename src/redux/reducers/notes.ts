@@ -1,65 +1,63 @@
 import { ActionType } from "../ActionTypes";
 import { Action } from "../actions";
 import { Store } from "../store";
-import { EntranceLinks } from "../../common/locations";
+import { NewEntranceLinkType } from "../../common/locations";
 import { BinaryItemState, InventoryStateUpdate } from "../../common/inventory";
 import { getLocationById, TAGS } from "../../common/mapData";
 import { NotesType } from "../../common/notes";
 
+// TODO (BACKLOG): Review after implementing change for not coupling single entrance caves
 export default function(state: NotesType, action: Action, root: Store): NotesType {
   let newNotes: NotesType = { ...state };
 
   switch (action.type) {
-    case ActionType.ADD_ENTRANCE_LINKS:
-      let newEntranceLinks: EntranceLinks = (action.payload as EntranceLinks);
+    case ActionType.ADD_ENTRANCE_LINK:
+      let newEntranceLink: NewEntranceLinkType = (action.payload as NewEntranceLinkType);
+      const startLocationId = newEntranceLink.source;
+      const endLocationId = newEntranceLink.destination;
 
-      for (let entries of Object.entries(newEntranceLinks)) {
-        const startLocationId = entries[0];
-        const endLocationId = entries[1];
+      /* Note already exists */
+      if (
+        newNotes.references.hasOwnProperty(startLocationId) &&
+        newNotes.references.hasOwnProperty(endLocationId)
+      ) {
+        return newNotes;
+      }
 
-        /* Note already exists */
-        if (
-          newNotes.references.hasOwnProperty(startLocationId) &&
-          newNotes.references.hasOwnProperty(endLocationId)
-        ) {
-          continue;
+      /* Note needs to be updated (dark room after lamp) */
+      if (
+        (newNotes.references.hasOwnProperty(startLocationId) && !newNotes.references.hasOwnProperty(endLocationId)) ||
+        (!newNotes.references.hasOwnProperty(startLocationId) && newNotes.references.hasOwnProperty(endLocationId))
+      ) {
+        let index: number;
+
+        // Add the reference for the location that doesn't have one
+        if (newNotes.references.hasOwnProperty(startLocationId)) {
+          index = newNotes.references[startLocationId];
+          newNotes.references[endLocationId] = index;
+        } else {
+          index = newNotes.references[endLocationId];
+          newNotes.references[startLocationId] = index;
         }
 
-        /* Note needs to be updated (dark room after lamp) */
-        if (
-          (newNotes.references.hasOwnProperty(startLocationId) && !newNotes.references.hasOwnProperty(endLocationId)) ||
-          (!newNotes.references.hasOwnProperty(startLocationId) && newNotes.references.hasOwnProperty(endLocationId))
-        ) {
-          let index: number;
-
-          // Add the reference for the location that doesn't have one
-          if (newNotes.references.hasOwnProperty(startLocationId)) {
-            index = newNotes.references[startLocationId];
-            newNotes.references[endLocationId] = index;
-          } else {
-            index = newNotes.references[endLocationId];
-            newNotes.references[startLocationId] = index;
-          }
-
-          // Overwrite note
-          let startLocationName = getLocationNameForNotes(startLocationId, root);
-          let endLocationName = getLocationNameForNotes(endLocationId, root);
-          newNotes.text[index] = `${startLocationName} --> ${endLocationName}`;
-
-          continue;
-        }
-
-        /* New note */
+        // Overwrite note
         let startLocationName = getLocationNameForNotes(startLocationId, root);
         let endLocationName = getLocationNameForNotes(endLocationId, root);
+        newNotes.text[index] = `${startLocationName} --> ${endLocationName}`;
 
-        // Set references to the index in the array that contains these locations
-        newNotes.references[startLocationId] = newNotes.text.length;
-        newNotes.references[endLocationId] = newNotes.text.length;
-
-        // Add new note
-        newNotes.text.push(`${startLocationName} --> ${endLocationName}`);
+        return newNotes;
       }
+
+      /* New note */
+      let startLocationName = getLocationNameForNotes(startLocationId, root);
+      let endLocationName = getLocationNameForNotes(endLocationId, root);
+
+      // Set references to the index in the array that contains these locations
+      newNotes.references[startLocationId] = newNotes.text.length;
+      newNotes.references[endLocationId] = newNotes.text.length;
+
+      // Add new note
+      newNotes.text.push(`${startLocationName} --> ${endLocationName}`);
 
       return newNotes;
 

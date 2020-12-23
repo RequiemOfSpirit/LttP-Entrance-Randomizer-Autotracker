@@ -1,97 +1,56 @@
-import { Item } from "./inventory";
+import { MemorySegmentType } from "./devices";
 
-export type AppConfig = {
-  [key in (
-    "initialIntervalId" |
-    "locationPollIntervalLength" |
-    "locationProcessIntervalLength" |
-    "inventoryPollIntervalLength" |
-    "inventoryProcessIntervalLength"
-  )]: number
-}
+export type AppConfigType = {
+  [key in ("initialIntervalId" | "locationPollIntervalLength" | "inventoryPollIntervalLength")]: number
+};
 
-export type LocationTrackerConfig = {
+export type LocationTrackerConfigType = {
   [key in ("entranceTriggerWidth" | "entranceTriggerHeight")]: number
-}
+};
 
-type ClientLocationSegment = {
+export type MemorySegmentConfigType = {
   baseAddress: string;
   readLength: string;
-  bufferLength: number;
-  unusedWorldTypeIndex: number;
-  data: {
-    overworld: { start: number, end: number },
-    underworld: { start: number, end: number },
-    coordinates: { start: number, end: number },
-    worldType: number
-  }
-}
+  type: MemorySegmentType;
+};
 
-type ClientInventorySegment = {
-  baseAddress: string;
-  readLength: string;
-  bufferLength: number;
-  data: {
-    [key in Item]: number
-  }
-}
+type LttpMemorySegmentsType = {
+  locationSegment: MemorySegmentConfigType;
+  inventorySegment: MemorySegmentConfigType;
+};
 
-export type LttpClientConfig = {
-  locationSegment: ClientLocationSegment;
-  inventorySegment: ClientInventorySegment;
-}
-
-export type GlobalConfig = {
-  appConfig: AppConfig;
-  locationTrackerConfig: LocationTrackerConfig;
-  lttpClientConfig: LttpClientConfig;
-}
+export type GlobalConfigType = {
+  appConfig: AppConfigType;
+  locationTrackerConfig: LocationTrackerConfigType;
+  memorySegmentConfig: LttpMemorySegmentsType;
+};
 
 /* Actual Config */
-export const GLOBAL_CONFIG: GlobalConfig = {
+export const GLOBAL_CONFIG: GlobalConfigType = {
+  // Config needed for the App component to function
   appConfig: {
     initialIntervalId: -1,
     locationPollIntervalLength: 800,
-    locationProcessIntervalLength: 2000,
-    inventoryPollIntervalLength: 3000,
-    inventoryProcessIntervalLength: 3000
+    inventoryPollIntervalLength: 2000
   },
 
+  // Config needed for the location tracker to function
   locationTrackerConfig: {
     entranceTriggerWidth: 20,
     entranceTriggerHeight: 60
   },
 
-  lttpClientConfig: {
+  // Config dictating the values to be used when reading memory using Usb2Snes servers
+  memorySegmentConfig: {
     locationSegment: {
       baseAddress: "F5001B",
       readLength: "87",  // Read length from SNES ram
-      bufferLength: 135,  // Actual length of buffer received
-      data: {  // Location of components within the received segment
-        worldType: 0,
-        overworld: {
-          start: 111,
-          end: 113
-        },
-        underworld: {
-          start: 133,
-          end: 135
-        },
-        coordinates: {
-          start: 5,
-          end: 9
-        }
-      },
-      unusedWorldTypeIndex: -1  // Value to be assigned to the unused screen type when creating a location
+      type: MemorySegmentType.LOCATION
     },
     inventorySegment: {
       baseAddress: "F5F34A",
       readLength: "1",
-      bufferLength: 1,
-      data: {
-        lamp: 0
-      }
+      type: MemorySegmentType.INVENTORY
     }
   }
-
 };

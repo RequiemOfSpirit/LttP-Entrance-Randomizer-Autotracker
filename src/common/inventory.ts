@@ -4,17 +4,17 @@ export enum BinaryItemState {
 }
 
 export type InventoryStateUpdate = {
-  [key in Item]?: BinaryItemState;
+  [key in ItemName]?: BinaryItemState;
 }
 
 /*
  * If adding more items have separate types, such as a type for BinaryStateItems
  * Use those types to build the Item type below and use each type as necessary
  */
-export type Item = "lamp";
+export type ItemName = "lamp";
 
 export type RawInventoryState = {
-  [key in Item]: number;
+  [key in ItemName]: number;
 }
 
 export class InventoryState {

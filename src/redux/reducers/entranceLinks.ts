@@ -1,16 +1,29 @@
 import { ActionType } from "../ActionTypes";
 import { Action } from "../actions";
 import { TAGS } from "../../common/mapData";
-import { EntranceLinks } from "../../common/locations";
+import { EntranceLinksType, NewEntranceLinkType } from "../../common/locations";
 import { InventoryStateUpdate } from "../../common/inventory";
 
-export default function(state: EntranceLinks, action: Action): EntranceLinks {
+export default function(state: EntranceLinksType, action: Action): EntranceLinksType {
+  // TODO (BACKLOG): This update assumes coupled entrances. Read from config instead.
+  let coupledEntrances = true;
+
   switch (action.type) {
-    case ActionType.ADD_ENTRANCE_LINKS:
+    case ActionType.ADD_ENTRANCE_LINK:
+      let newLinks: EntranceLinksType = {};
+      let payload = action.payload as NewEntranceLinkType;
+
+      // TODO (BACKLOG): Do not do this double linking for single exit caves
+      newLinks[payload.source] = payload.destination;
+      if (coupledEntrances) {
+        newLinks[payload.destination] = payload.source;
+      }
+
       return {
         ...state,
-        ...action.payload
+        ...newLinks
       };
+
     case ActionType.UPDATE_INVENTORY:
       if ((action.payload as InventoryStateUpdate).lamp !== 1) {
         return state;
@@ -20,8 +33,6 @@ export default function(state: EntranceLinks, action: Action): EntranceLinks {
        * Lamp has been obtained. Remove entrance links with dark rooms so that
        *   they are treated as new entrances when visited the next time.
        */
-      // TODO (BACKLOG): This removal assumes coupled entrances. Read from config.
-      let coupledEntrances = true;
       let newState = { ...state };
 
       // TODO (BACKLOG): Handle decoupled entrances. Removing for decoupled entrance links may require you to 

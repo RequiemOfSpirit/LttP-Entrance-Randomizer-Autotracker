@@ -1,4 +1,4 @@
-import { NamedLocation, WorldType } from "./locations";
+import { NamedLocation, UNUSED_WORLD_TYPE_INDEX, WorldType } from "./locations";
 
 export type EntranceLocationList = {
   [key: string]: NamedLocation
@@ -20,9 +20,9 @@ function generateNamedEntrance(location: RawLocation): NamedLocation {
   let owIndex, uwIndex;
   if (location.worldType === WorldType.OVERWORLD) {
     owIndex = location.screenIndex;
-    uwIndex = -1;
+    uwIndex = UNUSED_WORLD_TYPE_INDEX;
   } else {
-    owIndex = -1;
+    owIndex = UNUSED_WORLD_TYPE_INDEX;
     uwIndex = location.screenIndex;
   }
 

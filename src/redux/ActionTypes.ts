@@ -1,6 +1,6 @@
 export enum ActionType {
   // Game info related
-  ADD_ENTRANCE_LINKS,
+  ADD_ENTRANCE_LINK,
   UPDATE_INVENTORY,
 
   // Usb2Snes server related
