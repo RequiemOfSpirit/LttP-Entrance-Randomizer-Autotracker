@@ -17,7 +17,8 @@ const getEntranceLinks = (store: Store): EntranceLinksType => store.entranceLink
 
 /* Wrapper Functions that return methods that can be called later */
 // TODO (BACKLOG): Return true if its a single entrance uw location? Or create a separate function for this
-export function doesEntranceLinkExistWrapper(store: Store): Function {
+export type DoesEntranceLinkExistMethodSignature = (startLocationId: string, endLocationId: string) => boolean;
+export function doesEntranceLinkExistWrapper(store: Store): DoesEntranceLinkExistMethodSignature {
   return (startLocationId: string, endLocationId: string): boolean => {
     const entranceLinks = getEntranceLinks(store);
 

@@ -4,6 +4,7 @@ import { connect } from "react-redux";
 // Redux Store
 import { Store } from '../redux/store';
 import {
+  Action,
   addEntranceLink,
   updateInventory,
   updateServerConnectionStatus,
@@ -13,13 +14,17 @@ import {
   updateAppSettings
 } from "../redux/actions";
 import {
+  // Selectors
   doesEntranceLinkExistWrapper,
   getNotes,
   getInventoryState,
   getServerConnectionStatus,
   getDeviceList,
   getConnectedDevice,
-  getSettings
+  getSettings,
+
+  // Types
+  DoesEntranceLinkExistMethodSignature
 } from '../redux/selectors';
 
 // Helper Classes
@@ -35,7 +40,7 @@ import { Location, LocationLinkWithBackups, NewEntranceLinkType } from '../commo
 import { InventoryState, InventoryStateUpdate } from '../common/inventory';
 import { DeviceList, DeviceName, ConnectionStatus, ConnectedDevice, MemorySegmentType } from '../common/devices';
 import { NotesType } from '../common/notes';
-import { SettingsType, AppSettings } from '../common/settings';
+import { SettingsType, AppSettingsType } from '../common/settings';
 
 // React Components
 import Connections from './Connections';
@@ -53,17 +58,17 @@ interface StoreStateProps {
   connectedDevice: ConnectedDevice;
   serverConnectionStatus: ConnectionStatus;
   settings: SettingsType;
-  doesEntranceLinkExist: Function;
+  doesEntranceLinkExist: DoesEntranceLinkExistMethodSignature;
 }
 
 interface StoreReducerProps {
-  addEntranceLink: Function;
-  updateInventory: Function;
-  updateServerConnectionStatus: Function;
-  updateDeviceList: Function;
-  updateConnectedDevice: Function;
-  resetDeviceData: Function;
-  updateAppSettings: Function;
+  addEntranceLink: (newEntranceLink: NewEntranceLinkType) => Action;
+  updateInventory: (inventoryStateUpdate: InventoryStateUpdate) => Action;
+  updateServerConnectionStatus: (connectionStatus: ConnectionStatus) => Action;
+  updateDeviceList: (deviceList: DeviceList) => Action;
+  updateConnectedDevice: (connectedDevice: ConnectedDevice) => Action;
+  resetDeviceData: () => Action;
+  updateAppSettings: (settings: AppSettingsType) => Action;
 }
 
 type AppProps = StoreStateProps & StoreReducerProps & {
@@ -145,7 +150,7 @@ class App extends Component<AppProps, AppState> {
         />
         <Settings
           settings={this.props.settings}
-          updateStoreAppSettings={this.updateAppSettings.bind(this)}
+          updateAppSettings={this.updateAppSettings.bind(this)}
         />
         <Notes
           notes={this.props.notes}
@@ -239,7 +244,7 @@ class App extends Component<AppProps, AppState> {
   /**
    * Methods passed down to Settings page
    */
-  private updateAppSettings(settings: AppSettings): void {
+  private updateAppSettings(settings: AppSettingsType): void {
     this.props.updateAppSettings(settings);
   }
 

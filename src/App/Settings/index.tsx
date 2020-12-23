@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { SettingsType, ServerUrl } from "../../common/settings";
+import { SettingsType, ServerUrl, AppSettingsType } from "../../common/settings";
 
 interface SettingsChanged {
   appSettings: {
@@ -9,7 +9,7 @@ interface SettingsChanged {
 
 interface SettingsProps {
   settings: SettingsType;
-  updateStoreAppSettings: Function;
+  updateAppSettings: (settings: AppSettingsType) => void;
 }
 
 interface SettingsState {

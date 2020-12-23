@@ -2,7 +2,7 @@ import { ActionType } from "./ActionTypes";
 import { ConnectedDevice, ConnectionStatus, DeviceList } from "../common/devices";
 import { InventoryStateUpdate } from "../common/inventory";
 import { NewEntranceLinkType } from "../common/locations";
-import { AppSettings } from "../common/settings";
+import { AppSettingsType } from "../common/settings";
 
 export interface Action {
   type: ActionType;
@@ -48,7 +48,7 @@ export function updateServerConnectionStatus(connectionStatus: ConnectionStatus)
   };
 }
 
-export function updateAppSettings(settings: AppSettings): Action {
+export function updateAppSettings(settings: AppSettingsType): Action {
   return {
     type: ActionType.UPDATE_APP_SETTINGS,
     payload: settings

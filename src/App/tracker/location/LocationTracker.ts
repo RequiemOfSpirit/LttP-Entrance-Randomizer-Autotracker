@@ -1,10 +1,17 @@
-import { Location, WorldType, NewEntranceLinkType, LocationLinkWithBackups } from "../../../common/locations";
+import {
+  Location,
+  NamedLocation,
+  WorldType,
+  LocationLinkWithBackups,
+  NewEntranceLinkType
+} from "../../../common/locations";
 import { LocationTrackerConfigType } from "../../../common/config";
+import { DoesEntranceLinkExistMethodSignature } from "../../../redux/selectors";
 
 interface LocationTrackerUtilityMethods {
-  getLocationById: Function;
-  getLocationsOnScreen: Function;
-  doesEntranceLinkExist: Function;
+  getLocationById: (locationId: string) => NamedLocation;
+  getLocationsOnScreen: (worldType: WorldType, screenIndex: number) => Array<string>;
+  doesEntranceLinkExist: DoesEntranceLinkExistMethodSignature;
 }
 
 interface LocationTrackerConstructorParams {

@@ -1,11 +1,11 @@
 import React, { Component } from "react";
-import { DeviceList } from "../../common/devices";
+import { DeviceList, DeviceName } from "../../common/devices";
 
 interface ConnectionsProps {
   devices: DeviceList;
-  refreshDeviceList: Function;
-  connectToDevice: Function;
-  reconnectToServer: Function;
+  refreshDeviceList: () => void;
+  connectToDevice: (deviceName: DeviceName) => void;
+  reconnectToServer: () => void;
 }
 
 interface ConnectionsState {}
