@@ -1,17 +1,17 @@
 import { ActionType } from "../ActionTypes";
 import { Action } from "../actions";
 import { TAGS } from "../../common/mapData";
-import { EntranceLinksType, NewEntranceLinkType } from "../../common/locations";
-import { InventoryStateUpdate } from "../../common/inventory";
+import { EntranceLinks, NewEntranceLink } from "../../common/types/locations.types";
+import { InventoryStateUpdate } from "../../common/types/inventory.types";
 
-export default function(state: EntranceLinksType, action: Action): EntranceLinksType {
+export default function(state: EntranceLinks, action: Action): EntranceLinks {
   // TODO (BACKLOG): This update assumes coupled entrances. Read from config instead.
   let coupledEntrances = true;
 
   switch (action.type) {
     case ActionType.ADD_ENTRANCE_LINK:
-      let newLinks: EntranceLinksType = {};
-      let payload = action.payload as NewEntranceLinkType;
+      let newLinks: EntranceLinks = {};
+      let payload = action.payload as NewEntranceLink;
 
       // TODO (BACKLOG): Do not do this double linking for single exit caves
       newLinks[payload.source] = payload.destination;

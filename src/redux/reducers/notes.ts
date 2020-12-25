@@ -1,18 +1,19 @@
 import { ActionType } from "../ActionTypes";
 import { Action } from "../actions";
 import { Store } from "../store";
-import { NewEntranceLinkType } from "../../common/locations";
-import { BinaryItemState, InventoryStateUpdate } from "../../common/inventory";
+import { NewEntranceLink } from "../../common/types/locations.types";
+import { BinaryItemState, InventoryStateUpdate } from "../../common/types/inventory.types";
+import { Notes } from "../../common/types/notes.types";
+
 import { getLocationById, TAGS } from "../../common/mapData";
-import { NotesType } from "../../common/notes";
 
 // TODO (BACKLOG): Review after implementing change for not coupling single entrance caves
-export default function(state: NotesType, action: Action, root: Store): NotesType {
-  let newNotes: NotesType = { ...state };
+export default function(state: Notes, action: Action, root: Store): Notes {
+  let newNotes: Notes = { ...state };
 
   switch (action.type) {
     case ActionType.ADD_ENTRANCE_LINK:
-      let newEntranceLink: NewEntranceLinkType = (action.payload as NewEntranceLinkType);
+      let newEntranceLink: NewEntranceLink = (action.payload as NewEntranceLink);
       const startLocationId = newEntranceLink.source;
       const endLocationId = newEntranceLink.destination;
 

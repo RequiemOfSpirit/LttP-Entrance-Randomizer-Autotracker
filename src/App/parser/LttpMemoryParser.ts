@@ -1,6 +1,14 @@
-import { Location, UNUSED_WORLD_TYPE_INDEX, WorldType } from "../../common/locations";
+// Types
+import { WorldType } from "../../common/types/locations.types";
+import { LttpMemoryParserConfig } from "./LttpMemoryParserConfig";
+
+// Constants
+import { UNUSED_WORLD_TYPE_INDEX } from "../../common/locations";
+import { MEMORY_PARSER_CONFIG } from "./LttpMemoryParserConfig";
+
+// Classes
+import { Location } from "../../common/locations";
 import { InventoryState, RawInventoryState } from "../../common/inventory";
-import { LttpMemoryParserConfig, LttpMemoryParserConfigType } from "./LttpMemoryParserConfig";
 
 // Merge in methods of the Blob object type not present in the typescript Blob interface
 declare global {
@@ -10,9 +18,9 @@ declare global {
 }
 
 export class LttpMemoryParser {
-  config: LttpMemoryParserConfigType;
+  config: LttpMemoryParserConfig;
 
-  constructor(config: LttpMemoryParserConfigType = LttpMemoryParserConfig) {
+  constructor(config: LttpMemoryParserConfig = MEMORY_PARSER_CONFIG) {
     /**
      * This config is inherent to this parser and is hence not injected by the App.
      * This is also the reaason why this config is separated from the common global config.

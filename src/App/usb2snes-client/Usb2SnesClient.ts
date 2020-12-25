@@ -1,4 +1,4 @@
-import { DeviceName, ConnectionStatus, ConnectedDevice, DeviceList } from "../../common/devices";
+import { DeviceName, ConnectionStatus, ConnectedDevice, DeviceList } from "../../common/types/devices.types";
 
 enum CommandType {
   LIST = "DeviceList",

@@ -1,24 +1,6 @@
-enum EntranceRandomizerType {
-  SIMPLE = "simple",
-  RESTRICTED = "restricted",
-  FULL = "full",
-  CROSSED = "crossed",
-  INSANITY = "insanity"
-}
+import { Settings, EntranceRandomizerType } from "./types/settings.types";
 
-export type ServerUrl = string;
-
-// App related settings (settings that are non related to locations)
-export interface AppSettingsType {
-  usb2SnesServerUrl: ServerUrl;
-  entranceRandomizerType: EntranceRandomizerType;
-}
-
-export interface SettingsType {
-  appSettings: AppSettingsType;
-}
-
-export const BASE_SETTINGS: SettingsType = {
+export const BASE_SETTINGS: Settings = {
   appSettings: {
     usb2SnesServerUrl: "ws://127.0.0.1:8080",
     entranceRandomizerType: EntranceRandomizerType.CROSSED

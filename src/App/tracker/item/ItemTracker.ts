@@ -1,4 +1,5 @@
-import { InventoryState, ItemName, InventoryStateUpdate } from "../../../common/inventory";
+import { InventoryState } from "../../../common/inventory";
+import { InventoryStateUpdate, ItemName } from "../../../common/types/inventory.types";
 
 export class ItemTracker {
   getInventoryStateUpdates(previousInventoryState: InventoryState, currentInventoryState: InventoryState): InventoryStateUpdate {

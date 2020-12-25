@@ -1,15 +1,15 @@
 import { ActionType } from "./ActionTypes";
-import { ConnectedDevice, ConnectionStatus, DeviceList } from "../common/devices";
-import { InventoryStateUpdate } from "../common/inventory";
-import { NewEntranceLinkType } from "../common/locations";
-import { AppSettingsType } from "../common/settings";
+import { ConnectedDevice, ConnectionStatus, DeviceList } from "../common/types/devices.types";
+import { InventoryStateUpdate } from "../common/types/inventory.types";
+import { NewEntranceLink } from "../common/types/locations.types";
+import { AppSettings } from "../common/types/settings.types";
 
 export interface Action {
   type: ActionType;
   payload?: any;
 }
 
-export function addEntranceLink(newEntranceLink: NewEntranceLinkType): Action {
+export function addEntranceLink(newEntranceLink: NewEntranceLink): Action {
   return {
     type: ActionType.ADD_ENTRANCE_LINK,
     payload: newEntranceLink
@@ -48,7 +48,7 @@ export function updateServerConnectionStatus(connectionStatus: ConnectionStatus)
   };
 }
 
-export function updateAppSettings(settings: AppSettingsType): Action {
+export function updateAppSettings(settings: AppSettings): Action {
   return {
     type: ActionType.UPDATE_APP_SETTINGS,
     payload: settings

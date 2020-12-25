@@ -1,12 +1,8 @@
 import { ActionType } from "../ActionTypes";
 import { Action } from "../actions";
-import {
-  ConnectedDevice,
-  ConnectionStatus,
-  DeviceList,
-  EMPTY_DEVICE_LIST,
-  NULL_DEVICE
-} from "../../common/devices";
+import { DeviceList, ConnectedDevice, ConnectionStatus } from "../../common/types/devices.types";
+
+import { EMPTY_DEVICE_LIST, NULL_DEVICE } from "../../common/devices";
 
 export const deviceList = (state: DeviceList, action: Action): DeviceList => {
   switch (action.type) {

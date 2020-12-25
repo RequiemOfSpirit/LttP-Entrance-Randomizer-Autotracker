@@ -1,11 +1,6 @@
-import {
-  Location,
-  NamedLocation,
-  WorldType,
-  LocationLinkWithBackups,
-  NewEntranceLinkType
-} from "../../../common/locations";
-import { LocationTrackerConfigType } from "../../../common/config";
+import { Location, NamedLocation } from "../../../common/locations";
+import { LocationTrackerConfig } from "../../../common/types/config.types";
+import { WorldType, LocationLinkWithBackups, NewEntranceLink } from "../../../common/types/locations.types";
 import { DoesEntranceLinkExistMethodSignature } from "../../../redux/selectors";
 
 interface LocationTrackerUtilityMethods {
@@ -16,12 +11,12 @@ interface LocationTrackerUtilityMethods {
 
 interface LocationTrackerConstructorParams {
   utilityMethods: LocationTrackerUtilityMethods;
-  config: LocationTrackerConfigType;
+  config: LocationTrackerConfig;
 }
 
 export class LocationTracker {
   utilityMethods: LocationTrackerUtilityMethods;
-  config: LocationTrackerConfigType;
+  config: LocationTrackerConfig;
 
   constructor(params: LocationTrackerConstructorParams) {
     this.utilityMethods = params.utilityMethods;
@@ -32,8 +27,8 @@ export class LocationTracker {
    * Backups are provided to this method because sometimes when reading data from the
    *   USB2SNES server, incorrect values are returned. The next read seems to give correct results.
    */
-  processLocationLink(locationLink: LocationLinkWithBackups): NewEntranceLinkType {
-    let entranceLink: NewEntranceLinkType = {
+  processLocationLink(locationLink: LocationLinkWithBackups): NewEntranceLink {
+    let entranceLink: NewEntranceLink = {
       source: "",
       destination: "",
       doesExist: false

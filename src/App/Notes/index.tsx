@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { NotesType } from "../../common/notes";
+import { Notes as NotesType } from "../../common/types/notes.types";
 
 interface NotesProps {
   notes: NotesType;

@@ -1,13 +1,19 @@
+// Types
+import { Store } from "../store";
+import { Action } from "../actions";
+import { ConnectionStatus } from "../../common/types/devices.types";
+
+// Constants
+import { BASE_INVENTORY } from "../../common/inventory";
+import { EMPTY_DEVICE_LIST, NULL_DEVICE } from "../../common/devices";
+import { BASE_SETTINGS } from "../../common/settings";
+
+// Reducer methods
 import inventory from "./inventory";
 import entranceLinks from "./entranceLinks";
 import notes from "./notes";
 import { connectedDevice, deviceList, serverConnectionStatus } from "./devices";
 import settings from "./settings";
-import { Store } from "../store";
-import { Action } from "../actions";
-import { BASE_INVENTORY } from "../../common/inventory";
-import { ConnectionStatus, EMPTY_DEVICE_LIST, NULL_DEVICE } from "../../common/devices";
-import { BASE_SETTINGS } from "../../common/settings";
 
 const INITIAL_STORE_STATE: Store = {
   inventory: BASE_INVENTORY,

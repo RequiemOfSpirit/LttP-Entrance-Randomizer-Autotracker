@@ -34,13 +34,21 @@ import { LocationBuffer } from './tracker/location/LocationBuffer';
 import { LocationTracker } from './tracker/location/LocationTracker';
 import { ItemTracker } from './tracker/item/ItemTracker';
 
-// Common Types, Classes
-import { GlobalConfigType, AppConfigType, MemorySegmentConfigType } from '../common/config';
-import { Location, LocationLinkWithBackups, NewEntranceLinkType } from '../common/locations';
-import { InventoryState, InventoryStateUpdate } from '../common/inventory';
-import { DeviceList, DeviceName, ConnectionStatus, ConnectedDevice, MemorySegmentType } from '../common/devices';
-import { NotesType } from '../common/notes';
-import { SettingsType, AppSettingsType } from '../common/settings';
+// Common Types
+import { Location } from '../common/locations';  // Only used as a type in this file
+import { InventoryState } from '../common/inventory';  // Only used as a type in this file
+import { GlobalConfig, AppConfig, MemorySegmentConfig } from '../common/types/config.types';
+import {
+  DeviceName,
+  DeviceList,
+  ConnectedDevice,
+  ConnectionStatus,
+  MemorySegmentType
+} from '../common/types/devices.types';
+import { InventoryStateUpdate } from '../common/types/inventory.types';
+import { NewEntranceLink, LocationLinkWithBackups } from '../common/types/locations.types';
+import { Notes as NotesType } from '../common/types/notes.types';
+import { Settings as SettingsType, AppSettings } from '../common/types/settings.types';
 
 // React Components
 import Connections from './Connections';
@@ -62,21 +70,21 @@ interface StoreStateProps {
 }
 
 interface StoreReducerProps {
-  addEntranceLink: (newEntranceLink: NewEntranceLinkType) => Action;
+  addEntranceLink: (newEntranceLink: NewEntranceLink) => Action;
   updateInventory: (inventoryStateUpdate: InventoryStateUpdate) => Action;
   updateServerConnectionStatus: (connectionStatus: ConnectionStatus) => Action;
   updateDeviceList: (deviceList: DeviceList) => Action;
   updateConnectedDevice: (connectedDevice: ConnectedDevice) => Action;
   resetDeviceData: () => Action;
-  updateAppSettings: (settings: AppSettingsType) => Action;
+  updateAppSettings: (settings: AppSettings) => Action;
 }
 
 type AppProps = StoreStateProps & StoreReducerProps & {
-  globalConfig: GlobalConfigType;
+  globalConfig: GlobalConfig;
 };
 
 interface AppState {
-  config: AppConfigType;
+  config: AppConfig;
 
   // Helper classes
   client: Usb2SnesClient;
@@ -180,7 +188,7 @@ class App extends Component<AppProps, AppState> {
         const newLocation: Location = await this.state.parser.parseLocationSegment(byteData);
         this.state.locationBuffer.add(newLocation);
 
-        let entranceLink: NewEntranceLinkType;
+        let entranceLink: NewEntranceLink;
         let locationLinkWithBackups: LocationLinkWithBackups;
         try {
           locationLinkWithBackups = this.state.locationBuffer.toLocationLinkWithBackups();
@@ -244,7 +252,7 @@ class App extends Component<AppProps, AppState> {
   /**
    * Methods passed down to Settings page
    */
-  private updateAppSettings(settings: AppSettingsType): void {
+  private updateAppSettings(settings: AppSettings): void {
     this.props.updateAppSettings(settings);
   }
 
@@ -288,13 +296,13 @@ class App extends Component<AppProps, AppState> {
 
   // Read location memory segment using the Usb2Snes client
   private getCurrentLocation(): void {
-    const segmentConfig: MemorySegmentConfigType = this.props.globalConfig.memorySegmentConfig.locationSegment;
+    const segmentConfig: MemorySegmentConfig = this.props.globalConfig.memorySegmentConfig.locationSegment;
     this.state.client.readMemory(segmentConfig.baseAddress, segmentConfig.readLength, segmentConfig.type);
   }
 
   // Read inventory memory segment using the Usb2Snes client
   private getCurrentInventoryState(): void {
-    const segmentConfig: MemorySegmentConfigType = this.props.globalConfig.memorySegmentConfig.inventorySegment;
+    const segmentConfig: MemorySegmentConfig = this.props.globalConfig.memorySegmentConfig.inventorySegment;
     this.state.client.readMemory(segmentConfig.baseAddress, segmentConfig.readLength, segmentConfig.type);
   }
 }

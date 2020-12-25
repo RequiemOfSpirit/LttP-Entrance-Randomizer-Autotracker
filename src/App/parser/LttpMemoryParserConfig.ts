@@ -1,23 +1,23 @@
-import { ItemName } from "../../common/inventory"
+import { ItemName } from "../../common/types/inventory.types";
 
-type LocationSegmentIndicesType = {
+type LocationSegmentIndices = {
   overworld: { start: number, end: number },
   underworld: { start: number, end: number },
   coordinates: { start: number, end: number },
   worldType: number;
 }
 
-type InventorySegmentIndicesType = {
+type InventorySegmentIndices = {
   [key in ItemName]: number
 }
 
-export type LttpMemoryParserConfigType = {
-  locationSegmentIndices: LocationSegmentIndicesType;
-  inventorySegmentIndices: InventorySegmentIndicesType;
+export type LttpMemoryParserConfig = {
+  locationSegmentIndices: LocationSegmentIndices;
+  inventorySegmentIndices: InventorySegmentIndices;
 }
 
 // This config lists the indices of specific data fragments in the memory segment received
-export const LttpMemoryParserConfig : LttpMemoryParserConfigType = {
+export const MEMORY_PARSER_CONFIG : LttpMemoryParserConfig = {
   locationSegmentIndices: {
     worldType: 0,
     overworld: {

@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { DeviceList, DeviceName } from "../../common/devices";
+import { DeviceList, DeviceName } from "../../common/types/devices.types";
 
 interface ConnectionsProps {
   devices: DeviceList;

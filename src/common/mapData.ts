@@ -1,10 +1,11 @@
-import { NamedLocation, UNUSED_WORLD_TYPE_INDEX, WorldType } from "./locations";
+import { WorldType } from "./types/locations.types";
+import { NamedLocation, UNUSED_WORLD_TYPE_INDEX } from "./locations";
 
-export type EntranceLocationList = {
+type EntranceLocationList = {
   [key: string]: NamedLocation
 };
 
-export type ScreenData = {
+type ScreenData = {
   [key in WorldType]: { [key: number]: Array<string> }
 };
 

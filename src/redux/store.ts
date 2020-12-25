@@ -1,25 +1,22 @@
+import { InventoryState } from "../common/inventory";
+import { EntranceLinks } from "../common/types/locations.types";
+import { Notes } from "../common/types/notes.types";
+import { ConnectionStatus, DeviceList, ConnectedDevice } from "../common/types/devices.types";
+import { Settings } from "../common/types/settings.types";
+
 import { createStore } from "redux";
 import rootReducer from "./reducers";
-import {
-  ConnectedDevice,
-  ConnectionStatus,
-  DeviceList
-} from "../common/devices";
-import { SettingsType } from "../common/settings";
-import { InventoryState } from "../common/inventory";
-import { EntranceLinksType } from "../common/locations";
-import { NotesType } from "../common/notes";
 
 export interface Store {
   inventory: InventoryState;
-  entranceLinks: EntranceLinksType;
-  notes: NotesType;
+  entranceLinks: EntranceLinks;
+  notes: Notes;
   serverConnectionStatus: ConnectionStatus;
   devices: {
     availableDevices: DeviceList;
     connectedDevice: ConnectedDevice;
   };
-  settings: SettingsType;
+  settings: Settings;
 }
 
 export default createStore(rootReducer);

@@ -1,4 +1,5 @@
-import { Location, LocationLinkWithBackups, LocationWithBackup } from "../../../common/locations";
+import { Location } from "../../../common/locations";
+import { LocationLinkWithBackups, LocationWithBackup } from "../../../common/types/locations.types";
 
 /**
  * Buffer class to temporarily hold historical location data.

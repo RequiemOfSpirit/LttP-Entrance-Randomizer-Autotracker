@@ -1,32 +1,7 @@
-import { MemorySegmentType } from "./devices";
+import { GlobalConfig } from "./types/config.types";
+import { MemorySegmentType } from "./types/devices.types";
 
-export type AppConfigType = {
-  [key in ("initialIntervalId" | "locationPollIntervalLength" | "inventoryPollIntervalLength")]: number
-};
-
-export type LocationTrackerConfigType = {
-  [key in ("entranceTriggerWidth" | "entranceTriggerHeight")]: number
-};
-
-export type MemorySegmentConfigType = {
-  baseAddress: string;
-  readLength: string;
-  type: MemorySegmentType;
-};
-
-type LttpMemorySegmentsType = {
-  locationSegment: MemorySegmentConfigType;
-  inventorySegment: MemorySegmentConfigType;
-};
-
-export type GlobalConfigType = {
-  appConfig: AppConfigType;
-  locationTrackerConfig: LocationTrackerConfigType;
-  memorySegmentConfig: LttpMemorySegmentsType;
-};
-
-/* Actual Config */
-export const GLOBAL_CONFIG: GlobalConfigType = {
+export const GLOBAL_CONFIG: GlobalConfig = {
   // Config needed for the App component to function
   appConfig: {
     initialIntervalId: -1,
