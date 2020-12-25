@@ -1,18 +1,14 @@
 import { WorldType } from "./types/locations.types";
 
-export const UNUSED_WORLD_TYPE_INDEX = -1;
-
 export class Location {
-  readonly worldType: number;
-  readonly overworldIndex: number;
-  readonly underworldIndex: number;
+  readonly worldType: WorldType;
+  readonly screenIndex: number;
   readonly coordinates: { x: number, y: number };
 
   // TODO: Accept only screenindex in constructor
-  constructor(worldType: number, owIndex: number, uwIndex: number, xPosition: number, yPosition: number) {
+  constructor(worldType: number, screenIndex: number, xPosition: number, yPosition: number) {
     this.worldType = (worldType as WorldType);
-    this.overworldIndex = owIndex;
-    this.underworldIndex = uwIndex;
+    this.screenIndex = screenIndex;
     this.coordinates = {
       x: xPosition,
       y: yPosition
@@ -26,12 +22,11 @@ export class NamedLocation extends Location {
   constructor(
     name: string,
     worldType: number,
-    owIndex: number,
-    uwIndex: number,
+    screenIndex: number,
     xPosition: number,
     yPosition: number
   ) {
-    super(worldType, owIndex, uwIndex, xPosition, yPosition);
+    super(worldType, screenIndex, xPosition, yPosition);
     this.name = name;
   }
 }

@@ -3,7 +3,6 @@ import { WorldType } from "../../common/types/locations.types";
 import { LttpMemoryParserConfig } from "./LttpMemoryParserConfig";
 
 // Constants
-import { UNUSED_WORLD_TYPE_INDEX } from "../../common/locations";
 import { MEMORY_PARSER_CONFIG } from "./LttpMemoryParserConfig";
 
 // Classes
@@ -34,19 +33,17 @@ export class LttpMemoryParser {
     const indices = this.config.locationSegmentIndices;
 
     let worldType = dataArray[indices.worldType];
-    let owIndex: number, uwIndex: number;
+    let screenIndex: number;
 
     if (worldType === WorldType.OVERWORLD) {
-      owIndex = new Int16Array(dataArray.slice(indices.overworld.start, indices.overworld.end).buffer)[0];
-      uwIndex = UNUSED_WORLD_TYPE_INDEX;
+      screenIndex = new Int16Array(dataArray.slice(indices.overworld.start, indices.overworld.end).buffer)[0];
     } else {
       // Underworld
-      owIndex = UNUSED_WORLD_TYPE_INDEX;
-      uwIndex = new Int16Array(dataArray.slice(indices.underworld.start, indices.underworld.end).buffer)[0];
+      screenIndex = new Int16Array(dataArray.slice(indices.underworld.start, indices.underworld.end).buffer)[0];
     }
 
     let [yPos, xPos] = new Int16Array(dataArray.slice(indices.coordinates.start, indices.coordinates.end).buffer);
-    return new Location(worldType, owIndex, uwIndex, xPos, yPos);
+    return new Location(worldType, screenIndex, xPos, yPos);
   }
 
   async parseInventorySegment(byteData: Blob): Promise<InventoryState> {

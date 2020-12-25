@@ -74,18 +74,10 @@ export class LocationTracker {
   }
 
   private getLocation(currentLocation: Location): string {
-    let worldType: WorldType, screenIndex: number;
-
-    // TODO: Extend screenindex to the class varaibles as well and don't split ow and uw indices?
-    if (currentLocation.worldType === WorldType.OVERWORLD) {
-      worldType = WorldType.OVERWORLD;
-      screenIndex = currentLocation.overworldIndex;
-    } else {
-      worldType = WorldType.UNDERWORLD;
-      screenIndex = currentLocation.underworldIndex;
-    }
-
-    const locationsOnScreen = this.utilityMethods.getLocationsOnScreen(worldType, screenIndex);
+    const locationsOnScreen = this.utilityMethods.getLocationsOnScreen(
+      currentLocation.worldType,
+      currentLocation.screenIndex
+    );
     let requiredLocationId = "";
 
     if (locationsOnScreen === undefined) {

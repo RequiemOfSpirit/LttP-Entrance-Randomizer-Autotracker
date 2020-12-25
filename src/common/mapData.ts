@@ -1,5 +1,5 @@
 import { WorldType } from "./types/locations.types";
-import { NamedLocation, UNUSED_WORLD_TYPE_INDEX } from "./locations";
+import { NamedLocation } from "./locations";
 
 type EntranceLocationList = {
   [key: string]: NamedLocation
@@ -18,20 +18,10 @@ interface RawLocation {
 }
 
 function generateNamedEntrance(location: RawLocation): NamedLocation {
-  let owIndex, uwIndex;
-  if (location.worldType === WorldType.OVERWORLD) {
-    owIndex = location.screenIndex;
-    uwIndex = UNUSED_WORLD_TYPE_INDEX;
-  } else {
-    owIndex = UNUSED_WORLD_TYPE_INDEX;
-    uwIndex = location.screenIndex;
-  }
-
   return new NamedLocation(
     location.name,
     location.worldType,
-    owIndex,
-    uwIndex,
+    location.screenIndex,
     location.x,
     location.y
   );
