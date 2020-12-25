@@ -144,7 +144,7 @@ class App extends Component<AppProps, AppState> {
   }
 
   componentWillUnmount() {
-    this.clearIntervals();
+    this.stopPolling();
   }
 
   render() {
@@ -274,11 +274,6 @@ class App extends Component<AppProps, AppState> {
     }
   }
 
-  private clearIntervals(): void {
-    window.clearInterval(this.state.locationPollIntervalId);
-    window.clearInterval(this.state.inventoryPollIntervalId);
-  }
-
   private startPolling(): void {
     this.setState({
       locationPollIntervalId: window.setInterval(this.getCurrentLocation.bind(this), this.state.config.locationPollIntervalLength),
@@ -287,7 +282,9 @@ class App extends Component<AppProps, AppState> {
   }
 
   private stopPolling(): void {
-    this.clearIntervals();
+    window.clearInterval(this.state.locationPollIntervalId);
+    window.clearInterval(this.state.inventoryPollIntervalId);
+
     this.setState({
       locationPollIntervalId: this.state.config.initialIntervalId,
       inventoryPollIntervalId: this.state.config.initialIntervalId
