@@ -11,8 +11,10 @@ export const GLOBAL_CONFIG: GlobalConfig = {
 
   // Config needed for the location tracker to function
   locationTrackerConfig: {
-    entranceTriggerWidth: 20,
-    entranceTriggerHeight: 60
+    entranceTriggerSize: {  // trigger size in px
+      width: 20,
+      height: 60
+    }
   },
 
   // Config dictating the values to be used when reading memory using Usb2Snes servers

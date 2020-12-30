@@ -1,11 +1,12 @@
 import { MemorySegmentType } from "./devices.types";
+import { Dimensions } from "./locations.types";
 
 export type AppConfig = {
   [key in ("initialIntervalId" | "locationPollIntervalLength" | "inventoryPollIntervalLength")]: number
 };
 
 export type LocationTrackerConfig = {
-  [key in ("entranceTriggerWidth" | "entranceTriggerHeight")]: number
+  entranceTriggerSize: Dimensions;
 };
 
 export type MemorySegmentConfig = {

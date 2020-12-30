@@ -1,9 +1,9 @@
-import { WorldType } from "./types/locations.types";
+import { Coordinates, WorldType } from "./types/locations.types";
 
 export class Location {
   readonly worldType: WorldType;
   readonly screenIndex: number;
-  readonly coordinates: { x: number, y: number };
+  readonly coordinates: Coordinates;
 
   // TODO: Accept only screenindex in constructor
   constructor(worldType: number, screenIndex: number, xPosition: number, yPosition: number) {

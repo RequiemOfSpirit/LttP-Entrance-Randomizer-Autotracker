@@ -1,7 +1,7 @@
 import { Location, EntranceLocation } from "../../../common/locations";
 import { LocationTrackerConfig } from "../../../common/types/config.types";
 import { AppErrorType, CustomAppError } from "../../../common/types/errors.types";
-import { WorldType, EntranceLink, LocationLink } from "../../../common/types/locations.types";
+import { WorldType, EntranceLink, LocationLink, Coordinates, Dimensions } from "../../../common/types/locations.types";
 import { DoesEntranceLinkExistMethodSignature } from "../../../redux/selectors";
 
 import { AppErrorTypePriorities } from "../../../common/errors";
@@ -103,18 +103,15 @@ export class LocationTracker {
       throw error;
     }
 
-    let currentX = currentLocation.coordinates.x;
-    let currentY = currentLocation.coordinates.y;
-
     try {
       for (let locationId of locationsOnScreen) {
-        const location = this.utilityMethods.getLocationById(locationId);
-        // TODO (BACKLOG): Move collision check to another method?
-        if (
-          Math.abs(location.coordinates.x - currentX) < this.config.entranceTriggerWidth &&
-          Math.abs(location.coordinates.y - currentY) < this.config.entranceTriggerHeight
-        ) {
-          return location;
+        const screenLocation: EntranceLocation = this.utilityMethods.getLocationById(locationId);
+        if (this.doCoordinatesCollide(
+          currentLocation.coordinates,
+          screenLocation.coordinates,
+          this.config.entranceTriggerSize
+        )) {
+          return screenLocation;
         }
       }
     } catch (error) {
@@ -137,5 +134,25 @@ export class LocationTracker {
       message: `Location provided does not exist on the specified screen: ${JSON.stringify(currentLocation)}`
     };
     throw error;
+  }
+
+  /**
+   * Collision detection method for one set of 2D coordinates and a 2D target box.
+   * Returns true if the current coordinates lie within the target.
+   * Returns false otherwise.
+   */
+  private doCoordinatesCollide(
+    currentCoordinates: Coordinates,
+    targetCoordinates: Coordinates,
+    targetDimensions: Dimensions
+  ): boolean {
+    if (
+      Math.abs(targetCoordinates.x - currentCoordinates.x) < targetDimensions.width &&
+      Math.abs(targetCoordinates.y - currentCoordinates.y) < targetDimensions.height
+    ) {
+      return true;
+    }
+
+    return false;
   }
 }

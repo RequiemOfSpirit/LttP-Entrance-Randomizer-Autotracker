@@ -15,3 +15,13 @@ export enum WorldType {
   OVERWORLD = 0,
   UNDERWORLD = 1
 }
+
+export type Coordinates = {
+  x: number;
+  y: number;
+};
+
+export type Dimensions = {
+  width: number;
+  height: number;
+}
