@@ -9,11 +9,11 @@ export enum EntranceRandomizerType {
 export type ServerUrl = string;
 
 // App related settings (settings that are non related to locations)
-export interface AppSettings {
+export type AppSettings = {
   usb2SnesServerUrl: ServerUrl;
   entranceRandomizerType: EntranceRandomizerType;
-}
+};
 
-export interface Settings {
+export type Settings = {
   appSettings: AppSettings;
-}
+};

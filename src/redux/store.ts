@@ -7,7 +7,7 @@ import { Settings } from "../common/types/settings.types";
 import { createStore } from "redux";
 import rootReducer from "./reducers";
 
-export interface Store {
+export type Store = {
   inventory: InventoryState;
   entranceLinks: EntranceLinksById;
   notes: Notes;
@@ -17,6 +17,6 @@ export interface Store {
     connectedDevice: ConnectedDevice;
   };
   settings: Settings;
-}
+};
 
 export default createStore(rootReducer);

@@ -9,13 +9,13 @@ type ScreenData = {
   [key in WorldType]: { [key: number]: Array<string> }
 };
 
-interface RawLocation {
+type RawLocation = {
   x: number;
   y: number;
   name: string;
   screenIndex: number;
   worldType: number;
-}
+};
 
 const RAW_LOCATIONS: { [key: string]: RawLocation } = {
   '64b24cv54': { x: 744, y: 599, name: 'Lost Woods Thief Entrance', screenIndex: 0, worldType: 0 },
@@ -526,11 +526,11 @@ export function getLocationsOnScreen(worldType: WorldType, screenIndex: number):
 }
 
 /* TAGS */
-interface Tag {
+type Tag = {
   name: string;
   editable: boolean;
   locations: {[key: string]: true};  // Set of locations
-}
+};
 
 export const TAGS: { [key: string]: Tag } = {
   darkRooms: {

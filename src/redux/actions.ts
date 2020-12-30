@@ -4,10 +4,10 @@ import { InventoryStateUpdate } from "../common/types/inventory.types";
 import { EntranceLink } from "../common/types/locations.types";
 import { AppSettings } from "../common/types/settings.types";
 
-export interface Action {
+export type Action = {
   type: ActionType;
   payload?: any;
-}
+};
 
 export function addEntranceLink(newEntranceLink: EntranceLink): Action {
   return {

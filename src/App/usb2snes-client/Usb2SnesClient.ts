@@ -6,17 +6,17 @@ enum CommandType {
   READ_MEMORY = "GetAddress"
 }
 
-interface Command {
+type Command = {
   type: CommandType;
   params: { [key: string]: string }
-}
+};
 
-interface Usb2SnesRequestMessage {
+type Usb2SnesRequestMessage = {
   Opcode: string;
   Space: string;
   Flags?: Array<string>;
   Operands?: Array<string>;
-}
+};
 
 /**
  * Params to support subcriptions on messages.
