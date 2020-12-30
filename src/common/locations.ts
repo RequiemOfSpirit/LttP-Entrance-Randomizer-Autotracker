@@ -16,10 +16,12 @@ export class Location {
   }
 }
 
-export class NamedLocation extends Location {
+export class EntranceLocation extends Location {
+  readonly id: string;
   readonly name: string;
 
   constructor(
+    id: string,
     name: string,
     worldType: number,
     screenIndex: number,
@@ -27,6 +29,7 @@ export class NamedLocation extends Location {
     yPosition: number
   ) {
     super(worldType, screenIndex, xPosition, yPosition);
+    this.id = id;
     this.name = name;
   }
 }

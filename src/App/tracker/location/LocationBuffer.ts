@@ -1,5 +1,5 @@
 import { Location } from "../../../common/locations";
-import { LocationLinkWithBackups, LocationWithBackup } from "../../../common/types/locations.types";
+import { LocationLink } from "../../../common/types/locations.types";
 
 /**
  * Buffer class to temporarily hold historical location data.
@@ -7,7 +7,7 @@ import { LocationLinkWithBackups, LocationWithBackup } from "../../../common/typ
  *  a method to give a structured location link with backups out of those 4 locations
  */
 export class LocationBuffer {
-  static MAX_LENGTH = 4;
+  private static MAX_LENGTH = 4;
 
   private locationHistory: Array<Location> = [];
 
@@ -23,28 +23,38 @@ export class LocationBuffer {
     this.locationHistory.splice(0, this.locationHistory.length);
   }
 
-  toLocationLinkWithBackups(): LocationLinkWithBackups {
-    let sourceLocation: LocationWithBackup;
-    let destinationLocation: LocationWithBackup;
+  /**
+   * Returns the main location link being tracked (locations 2 and 3)
+   */
+  getLocationLink(): LocationLink {
+    let source: Location;
+    let destination: Location;
 
     try {
-      sourceLocation = {
-        main: this.getMainSource(),
-        backup: this.getBackupSource()
-      };
-      destinationLocation = {
-        main: this.getMainDestination(),
-        backup: this.getBackupDestination()
-      };
+      source = this.getMainSource();
+      destination = this.getMainDestination();
     } catch (error) {
-      const errorMessage = "Not enough locations to create LocationLink with backups";
-      throw new Error(errorMessage);
+      throw new Error("Not enough locations to create main LocationLink");
     }
 
-    return {
-      previous: sourceLocation,
-      next: destinationLocation
-    };
+    return { source, destination };
+  }
+
+  /**
+   * Returns the backup locations stored (locations 1 and 4)
+   */
+  getBackupLocations(): LocationLink {
+    let source: Location;
+    let destination: Location;
+
+    try {
+      source = this.getBackupSource();
+      destination = this.getBackupDestination();
+    } catch (error) {
+      throw new Error("Backup locations not available");
+    }
+
+    return { source, destination };
   }
 
   private getBackupSource(): Location {
@@ -67,8 +77,7 @@ export class LocationBuffer {
     let location: Location = this.locationHistory[index];
 
     if (location === undefined) {
-      const errorMessage = "Location not found";
-      throw new Error(errorMessage);
+      throw new Error("Location not found");
     }
 
     return location;

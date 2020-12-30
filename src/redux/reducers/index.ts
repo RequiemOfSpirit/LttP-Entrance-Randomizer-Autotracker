@@ -10,7 +10,7 @@ import { BASE_SETTINGS } from "../../common/settings";
 
 // Reducer methods
 import inventory from "./inventory";
-import entranceLinks from "./entranceLinks";
+import { entranceLinks } from "./locations";
 import notes from "./notes";
 import { connectedDevice, deviceList, serverConnectionStatus } from "./devices";
 import settings from "./settings";

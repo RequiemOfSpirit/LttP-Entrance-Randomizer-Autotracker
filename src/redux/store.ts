@@ -1,5 +1,5 @@
 import { InventoryState } from "../common/inventory";
-import { EntranceLinks } from "../common/types/locations.types";
+import { EntranceLinksById } from "../common/types/locations.types";
 import { Notes } from "../common/types/notes.types";
 import { ConnectionStatus, DeviceList, ConnectedDevice } from "../common/types/devices.types";
 import { Settings } from "../common/types/settings.types";
@@ -9,7 +9,7 @@ import rootReducer from "./reducers";
 
 export interface Store {
   inventory: InventoryState;
-  entranceLinks: EntranceLinks;
+  entranceLinks: EntranceLinksById;
   notes: Notes;
   serverConnectionStatus: ConnectionStatus;
   devices: {

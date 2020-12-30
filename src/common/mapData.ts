@@ -1,8 +1,8 @@
 import { WorldType } from "./types/locations.types";
-import { NamedLocation } from "./locations";
+import { EntranceLocation } from "./locations";
 
 type EntranceLocationList = {
-  [key: string]: NamedLocation
+  [key: string]: EntranceLocation
 };
 
 type ScreenData = {
@@ -15,16 +15,6 @@ interface RawLocation {
   name: string;
   screenIndex: number;
   worldType: number;
-}
-
-function generateNamedEntrance(location: RawLocation): NamedLocation {
-  return new NamedLocation(
-    location.name,
-    location.worldType,
-    location.screenIndex,
-    location.x,
-    location.y
-  );
 }
 
 const RAW_LOCATIONS: { [key: string]: RawLocation } = {
@@ -291,11 +281,22 @@ const RAW_LOCATIONS: { [key: string]: RawLocation } = {
   fi58mt715: { x: 3704, y: 9688, name: 'Hammer Pegs Inside', screenIndex: 295, worldType: 1 }
 };
 
+function generateEntranceLocation(location: RawLocation, locationId: string): EntranceLocation {
+  return new EntranceLocation(
+    locationId,
+    location.name,
+    location.worldType,
+    location.screenIndex,
+    location.x,
+    location.y
+  );
+}
+
 const ENTRANCE_LOCATIONS: EntranceLocationList = Object.assign(
   {}, 
-  ...Object.keys(RAW_LOCATIONS).map(entranceId => (
+  ...Object.keys(RAW_LOCATIONS).map(entranceLocationId => (
     {
-      [entranceId]: generateNamedEntrance(RAW_LOCATIONS[entranceId]) 
+      [entranceLocationId]: generateEntranceLocation(RAW_LOCATIONS[entranceLocationId], entranceLocationId)
     }
   ))
 );
@@ -516,7 +517,7 @@ const SCREEN_DATA: ScreenData = {
 }
 
 // Helper methods
-export function getLocationById(locationId: string): NamedLocation {
+export function getLocationById(locationId: string): EntranceLocation {
   return ENTRANCE_LOCATIONS[locationId];
 }
 

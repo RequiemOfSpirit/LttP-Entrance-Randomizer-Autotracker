@@ -1,10 +1,13 @@
-import { Location, NamedLocation } from "../../../common/locations";
+import { Location, EntranceLocation } from "../../../common/locations";
 import { LocationTrackerConfig } from "../../../common/types/config.types";
-import { WorldType, LocationLinkWithBackups, NewEntranceLink } from "../../../common/types/locations.types";
+import { AppErrorType, CustomAppError } from "../../../common/types/errors.types";
+import { WorldType, EntranceLink, LocationLink } from "../../../common/types/locations.types";
 import { DoesEntranceLinkExistMethodSignature } from "../../../redux/selectors";
 
+import { AppErrorTypePriorities } from "../../../common/errors";
+
 interface LocationTrackerUtilityMethods {
-  getLocationById: (locationId: string) => NamedLocation;
+  getLocationById: (locationId: string) => EntranceLocation;
   getLocationsOnScreen: (worldType: WorldType, screenIndex: number) => Array<string>;
   doesEntranceLinkExist: DoesEntranceLinkExistMethodSignature;
 }
@@ -26,63 +29,78 @@ export class LocationTracker {
   /**
    * Backups are provided to this method because sometimes when reading data from the
    *   USB2SNES server, incorrect values are returned. The next read seems to give correct results.
+   * See the comment in the `AppState` interface in `src/App/index.ts` for more details.
    */
-  processLocationLink(locationLink: LocationLinkWithBackups): NewEntranceLink {
-    let entranceLink: NewEntranceLink = {
-      source: "",
-      destination: "",
-      doesExist: false
-    };
-
+  processLocationLink(locationLink: LocationLink, backupLocations: LocationLink): EntranceLink | null {
     // No change in world type
-    if (!this.hasWorldTypeChanged(locationLink.previous.main, locationLink.next.main)) {
-      return entranceLink;
+    if (!this.hasWorldTypeChanged(locationLink.source, locationLink.destination)) {
+      return null;
     }
 
-    let startLocationId = this.getLocation(locationLink.previous.main);
-    if (startLocationId === "") {
-      startLocationId = this.getLocation(locationLink.previous.backup);
-    }
-
-    let endLocationId = this.getLocation(locationLink.next.main);
-    if (endLocationId === "") {
-      endLocationId = this.getLocation(locationLink.next.backup);
-    }
-
-    // Unable to process location
-    if (startLocationId === "" || endLocationId === "") {
-      // TODO (BACKLOG): Be more specific. Handle boss room warps, title screen starts etc.
-      console.warn("Unable to determine EntranceLink");
-      return entranceLink;
-    }
+    let startLocation: EntranceLocation = this.getEntranceLocationWrapper(
+      locationLink.source,
+      backupLocations.source
+    );
+    let endLocation: EntranceLocation = this.getEntranceLocationWrapper(
+      locationLink.destination,
+      backupLocations.destination
+    );
 
     // Entrance Link already exists
-    if (this.utilityMethods.doesEntranceLinkExist(startLocationId, endLocationId)) {
-      return entranceLink;
+    if (this.utilityMethods.doesEntranceLinkExist(startLocation.id, endLocation.id)) {
+      return null;
     }
 
-    // Write new entrance link info
-    entranceLink.source = startLocationId;
-    entranceLink.destination = endLocationId;
-    entranceLink.doesExist = true;
-
-    return entranceLink;
+    return {
+      source: startLocation,
+      destination: endLocation
+    };
   }
 
   private hasWorldTypeChanged(source: Location, destination: Location): boolean {
     return source.worldType !== destination.worldType;
   }
 
-  private getLocation(currentLocation: Location): string {
+  /**
+   * Wrapper method around `this.getEntranceLocation` that accepts backup locations and handles errors
+   */
+  private getEntranceLocationWrapper(location: Location, backupLocation: Location): EntranceLocation {
+    let mainLocationError: CustomAppError, backupLocationError : CustomAppError;
+
+    try {
+      return this.getEntranceLocation(location);
+    } catch (error1) {
+      mainLocationError = error1;
+
+      try {
+        return this.getEntranceLocation(backupLocation);
+      } catch (error2) {
+        backupLocationError = error2;
+      }
+    }
+
+    // Both attempts to determine the entrance location failed
+    if (mainLocationError.priority >= backupLocationError.priority) {
+      throw mainLocationError;
+    }
+
+    throw backupLocationError;
+  }
+
+  // TODO (BACKLOG): Handle boss room warps, title screen starts etc.
+  private getEntranceLocation(currentLocation: Location): EntranceLocation {
     const locationsOnScreen = this.utilityMethods.getLocationsOnScreen(
       currentLocation.worldType,
       currentLocation.screenIndex
     );
-    let requiredLocationId = "";
 
     if (locationsOnScreen === undefined) {
-      console.warn("Incorrect Location received:", currentLocation);
-      return requiredLocationId;
+      const error: CustomAppError = {
+        name: AppErrorType.INVALID_SCREEN_INDEX,
+        priority: AppErrorTypePriorities[AppErrorType.INVALID_SCREEN_INDEX],
+        message: `Incorrect Location screenIndex received: ${JSON.stringify(currentLocation)}`
+      };
+      throw error;
     }
 
     let currentX = currentLocation.coordinates.x;
@@ -96,19 +114,28 @@ export class LocationTracker {
           Math.abs(location.coordinates.x - currentX) < this.config.entranceTriggerWidth &&
           Math.abs(location.coordinates.y - currentY) < this.config.entranceTriggerHeight
         ) {
-          requiredLocationId = locationId;
-          break;
+          return location;
         }
       }
     } catch (error) {
       /**
        * This error should not occur.
        * This error would only occur if the locationId in the loop above is not valid
+       *   which would cause an NPE when looking for `location.coordinates.x`
        */
-      console.log(currentLocation);
-      console.warn(error);
+      console.warn(
+        error, "\n",
+        "Discrepency between `getLocationsOnScreen` and `getLocationById` helper methods", "\n",
+        "Current Location:", currentLocation
+      );
     }
 
-    return requiredLocationId;
+    // EntranceLocation was not found
+    const error: CustomAppError = {
+      name: AppErrorType.ENTRANCE_LOCATION_NOT_FOUND,
+      priority: AppErrorTypePriorities[AppErrorType.ENTRANCE_LOCATION_NOT_FOUND],
+      message: `Location provided does not exist on the specified screen: ${JSON.stringify(currentLocation)}`
+    };
+    throw error;
   }
 }

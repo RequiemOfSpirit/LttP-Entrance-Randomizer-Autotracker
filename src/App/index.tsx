@@ -46,7 +46,7 @@ import {
   MemorySegmentType
 } from '../common/types/devices.types';
 import { InventoryStateUpdate } from '../common/types/inventory.types';
-import { NewEntranceLink, LocationLinkWithBackups } from '../common/types/locations.types';
+import { LocationLink, EntranceLink } from '../common/types/locations.types';
 import { Notes as NotesType } from '../common/types/notes.types';
 import { Settings as SettingsType, AppSettings } from '../common/types/settings.types';
 
@@ -70,7 +70,7 @@ interface StoreStateProps {
 }
 
 interface StoreReducerProps {
-  addEntranceLink: (newEntranceLink: NewEntranceLink) => Action;
+  addEntranceLink: (newEntranceLink: EntranceLink) => Action;
   updateInventory: (inventoryStateUpdate: InventoryStateUpdate) => Action;
   updateServerConnectionStatus: (connectionStatus: ConnectionStatus) => Action;
   updateDeviceList: (deviceList: DeviceList) => Action;
@@ -188,26 +188,29 @@ class App extends Component<AppProps, AppState> {
         const newLocation: Location = await this.state.parser.parseLocationSegment(byteData);
         this.state.locationBuffer.add(newLocation);
 
-        let entranceLink: NewEntranceLink;
-        let locationLinkWithBackups: LocationLinkWithBackups;
+        let entranceLink: EntranceLink | null;
+        let mainLocationLink: LocationLink, backupLocations: LocationLink;
         try {
-          locationLinkWithBackups = this.state.locationBuffer.toLocationLinkWithBackups();
-        } catch (e) {
+          mainLocationLink = this.state.locationBuffer.getLocationLink();
+          backupLocations = this.state.locationBuffer.getBackupLocations();
+        } catch (error) {
           // Not enough locations to track entrance links
-          break;
+          console.debug(error.message);
+          return;
         }
 
         try {
-          entranceLink = this.state.locationTracker.processLocationLink(locationLinkWithBackups);
-        } catch (e) {
-          // TODO (BACKLOG): Failure is due to inconsistent entrance links possibly due to ROM change. Handle better.
-          throw e;
+          entranceLink = this.state.locationTracker.processLocationLink(mainLocationLink, backupLocations);
+        } catch (error) {
+          // TODO (BACKLOG): Failure could be due to inconsistent entrance links possibly due to ROM change. Handle better.
+          console.error(error);
+          return;
         }
 
-        if (entranceLink.doesExist) {
+        if (entranceLink !== null) {
           this.props.addEntranceLink(entranceLink);
         }
-        break;
+        return;
 
       case MemorySegmentType.INVENTORY:
         const currentInventoryState: InventoryState = await this.state.parser.parseInventorySegment(byteData);
@@ -219,7 +222,7 @@ class App extends Component<AppProps, AppState> {
         if (Object.keys(inventoryUpdate).length > 0) {
           this.props.updateInventory(inventoryUpdate);
         }
-        break;
+        return;
 
       default:
         console.error("Unknown Memory Segment Type");

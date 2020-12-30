@@ -1,7 +1,7 @@
 import { ActionType } from "../ActionTypes";
 import { Action } from "../actions";
 import { Store } from "../store";
-import { NewEntranceLink } from "../../common/types/locations.types";
+import { EntranceLink } from "../../common/types/locations.types";
 import { BinaryItemState, InventoryStateUpdate } from "../../common/types/inventory.types";
 import { Notes } from "../../common/types/notes.types";
 
@@ -13,9 +13,9 @@ export default function(state: Notes, action: Action, root: Store): Notes {
 
   switch (action.type) {
     case ActionType.ADD_ENTRANCE_LINK:
-      let newEntranceLink: NewEntranceLink = (action.payload as NewEntranceLink);
-      const startLocationId = newEntranceLink.source;
-      const endLocationId = newEntranceLink.destination;
+      let newEntranceLink: EntranceLink = (action.payload as EntranceLink);
+      const startLocationId = newEntranceLink.source.id;
+      const endLocationId = newEntranceLink.destination.id;
 
       /* Note already exists */
       if (

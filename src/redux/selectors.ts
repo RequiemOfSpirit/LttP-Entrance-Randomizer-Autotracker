@@ -1,5 +1,5 @@
 import { Store } from "./store";
-import { EntranceLinks } from "../common/types/locations.types";
+import { EntranceLinksById } from "../common/types/locations.types";
 import { InventoryState } from "../common/inventory";
 import { Notes } from "../common/types/notes.types";
 import { ConnectedDevice, ConnectionStatus, DeviceList } from "../common/types/devices.types";
@@ -13,7 +13,7 @@ export const getConnectedDevice = (store: Store): ConnectedDevice => store.devic
 export const getServerConnectionStatus = (store: Store): ConnectionStatus => store.serverConnectionStatus;
 // TODO (BACKLOG): Temporary settings selector. Needs replacement when location/tag based settings are added
 export const getSettings = (store: Store): Settings => store.settings;
-const getEntranceLinks = (store: Store): EntranceLinks => store.entranceLinks;
+const getEntranceLinks = (store: Store): EntranceLinksById => store.entranceLinks;
 
 /* Wrapper Functions that return methods that can be called later */
 // TODO (BACKLOG): Return true if its a single entrance uw location? Or create a separate function for this
