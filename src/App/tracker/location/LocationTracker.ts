@@ -1,11 +1,11 @@
 import { Location, EntranceLocation } from "../../../common/locations";
 import { LocationTrackerConfig } from "../../../common/types/config.types";
-import { AppErrorType, CustomAppError } from "../../../common/types/errors.types";
+import { CustomError } from "../../../common/types/errors.types";
 import { WorldType, EntranceLink, LocationLink, Coordinates, Dimensions } from "../../../common/types/locations.types";
 import { EntranceLocationId } from "../../../common/types/mapData.types";
 import { DoesEntranceLinkExistMethodSignature } from "../../../redux/selectors";
 
-import { AppErrorTypePriorities } from "../../../common/errors";
+import { EntranceLocationNotFoundError } from "../../../common/errors";
 
 interface LocationTrackerUtilityMethods {
   getLocationById: (locationId: EntranceLocationId) => EntranceLocation;
@@ -66,7 +66,7 @@ export class LocationTracker {
    * Wrapper method around `this.getEntranceLocation` that accepts backup locations and handles errors
    */
   private getEntranceLocationWrapper(location: Location, backupLocation: Location): EntranceLocation {
-    let mainLocationError: CustomAppError, backupLocationError : CustomAppError;
+    let mainLocationError: CustomError, backupLocationError : CustomError;
 
     try {
       return this.getEntranceLocation(location);
@@ -107,12 +107,9 @@ export class LocationTracker {
 
     // EntranceLocation was not found
     // TODO (BACKLOG): Handle boss room warps, title screen starts etc.
-    const error: CustomAppError = {
-      name: AppErrorType.ENTRANCE_LOCATION_NOT_FOUND,
-      priority: AppErrorTypePriorities[AppErrorType.ENTRANCE_LOCATION_NOT_FOUND],
-      message: `Location provided does not exist on the specified screen: ${JSON.stringify(currentLocation)}`
-    };
-    throw error;
+    const errorMessage: string =
+      `Location provided is not an Entrance Location on the specified screen: ${JSON.stringify(currentLocation)}`;
+    throw new EntranceLocationNotFoundError(errorMessage);
   }
 
   /**

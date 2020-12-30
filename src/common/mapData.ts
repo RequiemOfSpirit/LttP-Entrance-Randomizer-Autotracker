@@ -1,9 +1,8 @@
 import { WorldType } from "./types/locations.types";
 import { EntranceLocationId } from "./types/mapData.types";
-import { AppErrorType, CustomAppError } from "./types/errors.types";
 
 import { EntranceLocation } from "./locations";
-import { AppErrorTypePriorities } from "./errors";
+import { InvalidScreenIndexError } from "./errors";
 
 type EntranceLocationList = {
   [key in EntranceLocationId]: EntranceLocation
@@ -531,12 +530,11 @@ export function getLocationsOnScreen(worldType: WorldType, screenIndex: number):
   let requiredLocationsOnScreen = SCREEN_DATA[worldType][screenIndex];
 
   if (requiredLocationsOnScreen === undefined) {
-    const error: CustomAppError = {
-      name: AppErrorType.INVALID_SCREEN_INDEX,
-      priority: AppErrorTypePriorities[AppErrorType.INVALID_SCREEN_INDEX],
-      message: `Incorrect (worldtype, screenIndex) combination received: (${worldType}, ${screenIndex})`
-    };
-    throw error;
+    const errorMessage: string =
+      `The given screen of index '${screenIndex}' for worldtype '${worldType}' ` +
+      `does not exist (or) does not have any entrances on it`
+    ;
+    throw new InvalidScreenIndexError(errorMessage);
   }
 
   return requiredLocationsOnScreen;

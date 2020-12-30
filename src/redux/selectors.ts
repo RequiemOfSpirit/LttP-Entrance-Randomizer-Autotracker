@@ -6,6 +6,8 @@ import { Notes } from "../common/types/notes.types";
 import { ConnectedDevice, ConnectionStatus, DeviceList } from "../common/types/devices.types";
 import { Settings } from "../common/types/settings.types";
 
+import { InvalidEntranceLinkError } from "../common/errors";
+
 /* Simple selectors returning objects */
 export const getNotes = (store: Store): Notes => store.notes;
 export const getInventoryState = (store: Store): InventoryState => store.inventory;
@@ -34,10 +36,12 @@ export function doesEntranceLinkExistWrapper(store: Store): DoesEntranceLinkExis
       entranceLinks.hasOwnProperty(startLocationId) &&
       entranceLinks[startLocationId] !== endLocationId
     ) {
-      const errorMessage = "Invalid Entrance Link check received.";
-      console.error(errorMessage);
-      console.log(`${startLocationId}, ${endLocationId}`, "vs", `${startLocationId}, ${entranceLinks[startLocationId]}`);
-      throw new Error(errorMessage);
+      const errorMessage =
+        "Invalid Entrance Link check received. " +
+        `(Received: ${startLocationId} -> ${endLocationId}) vs ` +
+        `(Existing: ${startLocationId} -> ${entranceLinks[startLocationId]})`
+      ;
+      throw new InvalidEntranceLinkError(errorMessage);
     }
 
     return false;

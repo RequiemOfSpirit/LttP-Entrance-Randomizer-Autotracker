@@ -204,7 +204,7 @@ class App extends Component<AppProps, AppState> {
           entranceLink = this.state.locationTracker.processLocationLink(mainLocationLink, backupLocations);
         } catch (error) {
           // TODO (BACKLOG): Failure could be due to inconsistent entrance links possibly due to ROM change. Handle better.
-          console.error(error);
+          console.error(error.name, "-", error.message);
           return;
         }
 
