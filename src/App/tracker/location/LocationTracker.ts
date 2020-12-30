@@ -88,47 +88,25 @@ export class LocationTracker {
     throw backupLocationError;
   }
 
-  // TODO (BACKLOG): Handle boss room warps, title screen starts etc.
   private getEntranceLocation(currentLocation: Location): EntranceLocation {
     const locationsOnScreen = this.utilityMethods.getLocationsOnScreen(
       currentLocation.worldType,
       currentLocation.screenIndex
     );
 
-    if (locationsOnScreen === undefined) {
-      const error: CustomAppError = {
-        name: AppErrorType.INVALID_SCREEN_INDEX,
-        priority: AppErrorTypePriorities[AppErrorType.INVALID_SCREEN_INDEX],
-        message: `Incorrect Location screenIndex received: ${JSON.stringify(currentLocation)}`
-      };
-      throw error;
-    }
-
-    try {
-      for (let locationId of locationsOnScreen) {
-        const screenLocation: EntranceLocation = this.utilityMethods.getLocationById(locationId);
-        if (this.doCoordinatesCollide(
-          currentLocation.coordinates,
-          screenLocation.coordinates,
-          this.config.entranceTriggerSize
-        )) {
-          return screenLocation;
-        }
+    for (let locationId of locationsOnScreen) {
+      const screenLocation: EntranceLocation = this.utilityMethods.getLocationById(locationId);
+      if (this.doCoordinatesCollide(
+        currentLocation.coordinates,
+        screenLocation.coordinates,
+        this.config.entranceTriggerSize
+      )) {
+        return screenLocation;
       }
-    } catch (error) {
-      /**
-       * This error should not occur.
-       * This error would only occur if the locationId in the loop above is not valid
-       *   which would cause an NPE when looking for `location.coordinates.x`
-       */
-      console.warn(
-        error, "\n",
-        "Discrepency between `getLocationsOnScreen` and `getLocationById` helper methods", "\n",
-        "Current Location:", currentLocation
-      );
     }
 
     // EntranceLocation was not found
+    // TODO (BACKLOG): Handle boss room warps, title screen starts etc.
     const error: CustomAppError = {
       name: AppErrorType.ENTRANCE_LOCATION_NOT_FOUND,
       priority: AppErrorTypePriorities[AppErrorType.ENTRANCE_LOCATION_NOT_FOUND],
