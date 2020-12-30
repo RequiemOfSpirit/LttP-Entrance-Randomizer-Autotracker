@@ -1,4 +1,5 @@
 import { Coordinates, WorldType } from "./types/locations.types";
+import { EntranceLocationId } from "./types/mapData.types";
 
 export class Location {
   readonly worldType: WorldType;
@@ -17,11 +18,11 @@ export class Location {
 }
 
 export class EntranceLocation extends Location {
-  readonly id: string;
+  readonly id: EntranceLocationId;
   readonly name: string;
 
   constructor(
-    id: string,
+    id: EntranceLocationId,
     name: string,
     worldType: number,
     screenIndex: number,

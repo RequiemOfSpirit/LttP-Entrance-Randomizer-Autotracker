@@ -1,6 +1,7 @@
 import { Store } from "./store";
 import { EntranceLinksById } from "../common/types/locations.types";
 import { InventoryState } from "../common/inventory";
+import { EntranceLocationId } from "../common/types/mapData.types";
 import { Notes } from "../common/types/notes.types";
 import { ConnectedDevice, ConnectionStatus, DeviceList } from "../common/types/devices.types";
 import { Settings } from "../common/types/settings.types";
@@ -17,9 +18,9 @@ const getEntranceLinks = (store: Store): EntranceLinksById => store.entranceLink
 
 /* Wrapper Functions that return methods that can be called later */
 // TODO (BACKLOG): Return true if its a single entrance uw location? Or create a separate function for this
-export type DoesEntranceLinkExistMethodSignature = (startLocationId: string, endLocationId: string) => boolean;
+export type DoesEntranceLinkExistMethodSignature = (startLocationId: EntranceLocationId, endLocationId: EntranceLocationId) => boolean;
 export function doesEntranceLinkExistWrapper(store: Store): DoesEntranceLinkExistMethodSignature {
-  return (startLocationId: string, endLocationId: string): boolean => {
+  return (startLocationId: EntranceLocationId, endLocationId: EntranceLocationId): boolean => {
     const entranceLinks = getEntranceLinks(store);
 
     if (

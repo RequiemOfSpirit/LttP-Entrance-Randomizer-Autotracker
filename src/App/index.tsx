@@ -47,6 +47,7 @@ import {
 } from '../common/types/devices.types';
 import { InventoryStateUpdate } from '../common/types/inventory.types';
 import { LocationLink, EntranceLink } from '../common/types/locations.types';
+import { EntranceLocationId } from '../common/types/mapData.types';
 import { Notes as NotesType } from '../common/types/notes.types';
 import { Settings as SettingsType, AppSettings } from '../common/types/settings.types';
 
@@ -232,7 +233,7 @@ class App extends Component<AppProps, AppState> {
   /**
    * Methods passed to LocationTracker instance
    */
-  private doesEntranceLinkExist(startLocationId: string, endLocationId: string): boolean {
+  private doesEntranceLinkExist(startLocationId: EntranceLocationId, endLocationId: EntranceLocationId): boolean {
     return this.props.doesEntranceLinkExist(startLocationId, endLocationId);
   }
 

@@ -3,6 +3,7 @@ import { Action } from "../actions";
 import { Store } from "../store";
 import { EntranceLink } from "../../common/types/locations.types";
 import { BinaryItemState, InventoryStateUpdate } from "../../common/types/inventory.types";
+import { EntranceLocationId } from "../../common/types/mapData.types";
 import { Notes } from "../../common/types/notes.types";
 
 import { getLocationById, TAGS } from "../../common/mapData";
@@ -34,10 +35,10 @@ export default function(state: Notes, action: Action, root: Store): Notes {
 
         // Add the reference for the location that doesn't have one
         if (newNotes.references.hasOwnProperty(startLocationId)) {
-          index = newNotes.references[startLocationId];
+          index = newNotes.references[startLocationId]!;
           newNotes.references[endLocationId] = index;
         } else {
-          index = newNotes.references[endLocationId];
+          index = newNotes.references[endLocationId]!;
           newNotes.references[startLocationId] = index;
         }
 
@@ -71,7 +72,8 @@ export default function(state: Notes, action: Action, root: Store): Notes {
        * Lamp has been obtained. Remove notes refs with dark rooms so that
        *   they get updated when the corresponding entrance link is received the next time.
        */
-      Object.keys(TAGS.darkRooms.locations).forEach(darkRoomId => {
+      Object.keys(TAGS.darkRooms.locations).forEach(key => {
+        let darkRoomId = key as EntranceLocationId;
         if (!state.references.hasOwnProperty(darkRoomId)) {
           return;
         }
@@ -87,7 +89,7 @@ export default function(state: Notes, action: Action, root: Store): Notes {
 }
 
 // Utility method to get the location name to be stored in Notes
-function getLocationNameForNotes(locationId: string, root: Store): string {
+function getLocationNameForNotes(locationId: EntranceLocationId, root: Store): string {
   if (
     TAGS.darkRooms.locations.hasOwnProperty(locationId) &&
     root.inventory.lamp === BinaryItemState.ABSENT

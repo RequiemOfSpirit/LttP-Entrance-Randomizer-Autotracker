@@ -3,6 +3,7 @@ import { Action } from "../actions";
 import { TAGS } from "../../common/mapData";
 import { EntranceLink, EntranceLinksById } from "../../common/types/locations.types";
 import { InventoryStateUpdate } from "../../common/types/inventory.types";
+import { EntranceLocationId } from "../../common/types/mapData.types";
 
 export function entranceLinks(state: EntranceLinksById, action: Action): EntranceLinksById {
   // TODO (BACKLOG): This update assumes coupled entrances. Read from config instead.
@@ -37,15 +38,17 @@ export function entranceLinks(state: EntranceLinksById, action: Action): Entranc
 
       // TODO (BACKLOG): Handle decoupled entrances. Removing for decoupled entrance links may require you to 
       //    maintain a HashBiMap of entrance links
-      Object.keys(TAGS.darkRooms.locations).forEach(darkRoomId => {
+      Object.keys(TAGS.darkRooms.locations).forEach(key => {
+        let darkRoomId = key as EntranceLocationId;
         if (coupledEntrances) {
           if (!state.hasOwnProperty(darkRoomId)) {
             return;
           }
 
-          let connectedLocation = state[darkRoomId];
+          // '!' used to override typescript errors. If state did not have darkRoomId it would have exited above
+          let connectedLocationId = state[darkRoomId]!;
           delete newState[darkRoomId];
-          delete newState[connectedLocation];
+          delete newState[connectedLocationId];
         }
       });
 

@@ -2,13 +2,14 @@ import { Location, EntranceLocation } from "../../../common/locations";
 import { LocationTrackerConfig } from "../../../common/types/config.types";
 import { AppErrorType, CustomAppError } from "../../../common/types/errors.types";
 import { WorldType, EntranceLink, LocationLink, Coordinates, Dimensions } from "../../../common/types/locations.types";
+import { EntranceLocationId } from "../../../common/types/mapData.types";
 import { DoesEntranceLinkExistMethodSignature } from "../../../redux/selectors";
 
 import { AppErrorTypePriorities } from "../../../common/errors";
 
 interface LocationTrackerUtilityMethods {
-  getLocationById: (locationId: string) => EntranceLocation;
-  getLocationsOnScreen: (worldType: WorldType, screenIndex: number) => Array<string>;
+  getLocationById: (locationId: EntranceLocationId) => EntranceLocation;
+  getLocationsOnScreen: (worldType: WorldType, screenIndex: number) => Array<EntranceLocationId>;
   doesEntranceLinkExist: DoesEntranceLinkExistMethodSignature;
 }
 

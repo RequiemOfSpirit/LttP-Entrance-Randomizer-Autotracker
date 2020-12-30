@@ -1,12 +1,13 @@
 import { WorldType } from "./types/locations.types";
+import { EntranceLocationId } from "./types/mapData.types";
 import { EntranceLocation } from "./locations";
 
 type EntranceLocationList = {
-  [key: string]: EntranceLocation
+  [key in EntranceLocationId]: EntranceLocation
 };
 
 type ScreenData = {
-  [key in WorldType]: { [key: number]: Array<string> }
+  [key in WorldType]: { [key: number]: Array<EntranceLocationId> }
 };
 
 type RawLocation = {
@@ -17,7 +18,7 @@ type RawLocation = {
   worldType: number;
 };
 
-const RAW_LOCATIONS: { [key: string]: RawLocation } = {
+const RAW_LOCATIONS: { [key in EntranceLocationId]: RawLocation } = {
   '64b24cv54': { x: 744, y: 599, name: 'Lost Woods Thief Entrance', screenIndex: 0, worldType: 0 },
   j8lozfmed: { x: 752, y: 23, name: 'Lost Woods Stump', screenIndex: 0, worldType: 0 },
   '1fd6eym4w': { x: 1352, y: 119, name: 'Lumberjack Cave Entrance', screenIndex: 2, worldType: 0 },
@@ -281,7 +282,7 @@ const RAW_LOCATIONS: { [key: string]: RawLocation } = {
   fi58mt715: { x: 3704, y: 9688, name: 'Hammer Pegs Inside', screenIndex: 295, worldType: 1 }
 };
 
-function generateEntranceLocation(location: RawLocation, locationId: string): EntranceLocation {
+function generateEntranceLocation(location: RawLocation, locationId: EntranceLocationId): EntranceLocation {
   return new EntranceLocation(
     locationId,
     location.name,
@@ -292,13 +293,15 @@ function generateEntranceLocation(location: RawLocation, locationId: string): En
   );
 }
 
+// Merge all key value pairs returned in the map function into one object
 const ENTRANCE_LOCATIONS: EntranceLocationList = Object.assign(
   {}, 
-  ...Object.keys(RAW_LOCATIONS).map(entranceLocationId => (
-    {
+  ...Object.keys(RAW_LOCATIONS).map(key => {
+    let entranceLocationId = key as EntranceLocationId;
+    return {
       [entranceLocationId]: generateEntranceLocation(RAW_LOCATIONS[entranceLocationId], entranceLocationId)
-    }
-  ))
+    };
+  })
 );
 
 // List of entrance ids indexed by their screen index
@@ -517,11 +520,11 @@ const SCREEN_DATA: ScreenData = {
 }
 
 // Helper methods
-export function getLocationById(locationId: string): EntranceLocation {
+export function getLocationById(locationId: EntranceLocationId): EntranceLocation {
   return ENTRANCE_LOCATIONS[locationId];
 }
 
-export function getLocationsOnScreen(worldType: WorldType, screenIndex: number): Array<string> {
+export function getLocationsOnScreen(worldType: WorldType, screenIndex: number): Array<EntranceLocationId> {
   return SCREEN_DATA[worldType][screenIndex];
 }
 
@@ -529,7 +532,7 @@ export function getLocationsOnScreen(worldType: WorldType, screenIndex: number):
 type Tag = {
   name: string;
   editable: boolean;
-  locations: {[key: string]: true};  // Set of locations
+  locations: {[key in EntranceLocationId]?: true};  // Set of locations
 };
 
 export const TAGS: { [key: string]: Tag } = {
