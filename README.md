@@ -1,3 +1,7 @@
+An autotracker for entrances for Link to the Past that I abandoned mid development. It is still fully functional in giving you proper entrance links in the vanilla game and can provide all the entrance info needed in a seed with coupled entrances. It probably won't work as expected for decoupled entrances and will likely break on door rando seeds where dungeon entrances don't lead to vanilla starting rooms.
+
+---
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts

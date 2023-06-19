@@ -96,7 +96,7 @@ interface AppState {
   /**
    * An object which stores the 4 most recent locations received from the game.
    * When a new location appears, the oldest location is removed from the internal queue.
-   * The middle 2 locations (lcation 2 and 3) are the ones compared to determine entrance links.
+   * The middle 2 locations (location 2 and 3) are the ones compared to determine entrance links.
    * The locations at each end (location 1 and 4) serve as backups incase the above main locations
    *  contain incorrect information.
    * Locations can contain incorrect information due to a subroutine that runs in game that writes
